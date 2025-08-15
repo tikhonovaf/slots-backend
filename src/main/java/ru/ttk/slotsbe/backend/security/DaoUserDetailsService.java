@@ -22,7 +22,7 @@ public class DaoUserDetailsService implements UserDetailsService {
 
         return User.withUsername(login)
                 .password(user.getPassword())
-//                .roles(user.getRole() == null ? null : user.getRole().getName())
+                .roles("ADMIN")
                 .build();
     }
 }

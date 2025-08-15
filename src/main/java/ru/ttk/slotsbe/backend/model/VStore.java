@@ -4,12 +4,14 @@ import lombok.Getter;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
  * Нефтебаза
  */
 @Entity
 @Getter
+@Table(name = "v_store")
 public class VStore {
 
     /**

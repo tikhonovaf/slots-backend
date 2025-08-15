@@ -27,7 +27,7 @@ public class UserService {
         SecurityContextImpl sci = (SecurityContextImpl) request.getSession().getAttribute("SPRING_SECURITY_CONTEXT");
         ClientUser user;
         if (sci != null && sci.getAuthentication() != null) {
-            Optional<ClientUser> usrOptional = clientUserRepository.findByLogin(sci.getAuthentication().getName());
+            Optional<ClientUser> usrOptional = clientUserRepository.findByVcLogin(sci.getAuthentication().getName());
             if (usrOptional.isPresent()) {
                 user = usrOptional.get();
                 return user;

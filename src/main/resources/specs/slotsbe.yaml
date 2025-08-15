@@ -30,19 +30,24 @@ paths:
         200:
           description: Пустой ответ
 
-  /slots:
+  /slots/search:
     post:
-      summary: Выборка списка слотов
-      operationId: getSlots
+      summary: Выборка списка слотов с фильтром
+      operationId: getSlotsByFilters
       tags:
         - SLOT
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/slotSearchDto"
       responses:
         200:
-          description: Список слотов с фильтром
+          description: Список слотов
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/slotDtos"
+                $ref: "#/components/schemas/slotSearchResultDto"
     patch:
       summary: Редактирование слотов
       operationId: modifySlots
@@ -59,7 +64,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/slotDtos"
+                $ref: "#/components/schemas/slotSearchResultDto"
 
   /clients:
     get:
@@ -162,11 +167,23 @@ components:
           type: string
           description: Наименование
           example: Наименование 1
-    slotDtos:
-      type: array
-      description: Список слотов
-      items:
-        $ref: "#/components/schemas/slotDto"
+
+    slotSearchResultDto:
+      description: Список слотов с учетом пагинации
+      type: object
+      properties:
+        slotDtos:
+          type: array
+          items:
+            $ref: "#/components/schemas/slotDto"
+        page:
+          $ref: "#/components/schemas/page"
+
+#    slotDtos:
+#      type: array
+#      description: Список слотов
+#      items:
+#        $ref: "#/components/schemas/slotDto"
     slotDto:
       type: object
       description: Слот
@@ -338,3 +355,27 @@ components:
           type: string
           description: Комментарий
           example: Комментарий 1
+
+    slotSearchDto:
+      type: object
+      description: Параметры выборки списка слотов
+      properties:
+        slotSearchFilter:
+          $ref: "#/components/schemas/slotSearchFilter"
+        sort:
+          $ref: "#/components/schemas/sort"
+        paging:
+          $ref: "#/components/schemas/paging"
+    slotSearchFilter:
+      description: Фильтр для выборки списка слотов
+      type: object
+      properties:
+        nStoreId:
+          type: integer
+          format: int64
+          description: Идентификатор нефтебазы
+          example: 1
+        vcStatus:
+          type: string
+          description: Статус
+          example: B

@@ -4,12 +4,14 @@ import lombok.Getter;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
  * Пункт налива
  */
 @Entity
 @Getter
+@Table(name = "v_loading_point")
 public class VLoadingPoint {
 
     /**
@@ -31,7 +33,7 @@ public class VLoadingPoint {
     /**
      * Комментарий
      */
-    String vcСomment;
+    String vcComment;
 
     /**
      * Идентификатор нефтебазы

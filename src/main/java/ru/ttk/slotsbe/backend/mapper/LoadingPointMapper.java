@@ -1,8 +1,9 @@
 package ru.ttk.slotsbe.backend.mapper;
 
 import org.springframework.stereotype.Service;
-import ru.ttk.slotsbe.backend.dto.SlotDto;
-import ru.ttk.slotsbe.backend.model.*;
+import ru.ttk.slotsbe.backend.dto.*;
+import ru.ttk.slotsbe.backend.model.VClient;
+import ru.ttk.slotsbe.backend.model.VLoadingPoint;
 import ru.ttk.slotsbe.backend.util.CoreUtil;
 
 /**
@@ -11,16 +12,17 @@ import ru.ttk.slotsbe.backend.util.CoreUtil;
  * -  между dto rest сервиса и entity сущности
  */
 @Service
-public class SlotMapper {
+public class LoadingPointMapper {
     /**
-     * Маппинг из View SlotView в DTO
+     * Маппинг из View VClient в DTO
      *
-     * @param view - строка из view SlotView
+     * @param view - строка из view VLoadingPoint
      * @return Данные в структуре DTO
      */
-    public SlotDto fromViewToDto(VSlot view) {
-        SlotDto result = new SlotDto();
+    public LoadingPointDto fromViewToDto(VLoadingPoint view) {
+        LoadingPointDto result = new LoadingPointDto();
         CoreUtil.patch(view, result);
+
         return result;
     }
 

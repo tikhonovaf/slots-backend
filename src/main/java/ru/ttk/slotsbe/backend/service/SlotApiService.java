@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 public class SlotApiService implements SlotsApiDelegate {
 
     @Autowired
-    private UserService userService;
+    private SearchService searchService;
 
     @Autowired
     private SlotRepository slotRepository;
@@ -38,15 +38,30 @@ public class SlotApiService implements SlotsApiDelegate {
      * Список слотов
      */
     @Override
-    public ResponseEntity<List<SlotDto>> getSlots() {
-        List<SlotDto>  result =
-                    slotViewRepository
-                            .findAll()
-                            .stream()
-                            .map(v -> slotMapper.fromViewToDto(v))
-                            .collect(Collectors.toList());
+    public ResponseEntity<SlotSearchResultDto> getSlotsByFilters(SlotSearchDto slotSearchDto) {
+        SlotSearchResultDto result = new SlotSearchResultDto();
+
+//      Формирование выборки из View по заданным фильтрам
+        PageDto<VSlot> pageDto = searchService.findByFilter(
+                slotSearchDto.getSlotSearchFilter(),
+                slotSearchDto.getPaging(),
+                slotSearchDto.getSort(),
+                VSlot.class
+        );
+
+        List<SlotDto> resultList = pageDto.getElements()
+                .stream()
+                .map(v -> slotMapper.fromViewToDto(v))
+                .collect(Collectors.toList());
+
+        //      Запись данных из выборки
+        result.setSlotDtos(resultList);
+
+        //      Установка данных по пагинации
+        result.setPage(searchService.getPage(slotSearchDto.getPaging(), pageDto));
 
         return ResponseEntity.ok(result);
+
     }
 
     /**
@@ -54,7 +69,7 @@ public class SlotApiService implements SlotsApiDelegate {
      *
      */
     @Override
-    public ResponseEntity<List<SlotDto>> modifySlots(List<ModifiedSlotDto> modifiedSlotDto) {
+    public ResponseEntity<SlotSearchResultDto> modifySlots(List<ModifiedSlotDto> modifiedSlotDto) {
 //        if (slotRepository.findById(id).isPresent()) {
 //            Slot entity = slotRepository.findById(id).get();
 //            entity.setActual(false);

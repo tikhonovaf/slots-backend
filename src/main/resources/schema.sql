@@ -45,6 +45,19 @@ CREATE TABLE IF NOT EXISTS loading_point (
     CONSTRAINT loading_point_pkey PRIMARY KEY (n_loading_point_id)
     );
 
+ CREATE VIEW IF NOT EXISTS v_loading_point AS
+    SELECT
+        lp.n_loading_point_id,
+         lp.vc_code,
+         lp.vc_name,
+         lp.vc_comment,
+         lp.n_store_id,
+         s.vc_code as vc_store_code,
+         s.vc_name as vc_store_name
+     FROM loading_point lp
+     JOIN v_store s on lp.n_store_id = s.n_store_id
+;
+
 -- Список слотов (новая таблица)
 CREATE TABLE IF NOT EXISTS slot (
      n_slot_id bigint NOT NULL,
@@ -57,3 +70,24 @@ CREATE TABLE IF NOT EXISTS slot (
     CONSTRAINT slot_pkey PRIMARY KEY (n_slot_id)
     );
 
+ CREATE VIEW IF NOT EXISTS v_slot AS
+ SELECT
+     slot.n_slot_id,
+     slot.d_date,
+     slot.d_start_time,
+     slot.d_end_time,
+     slot.vc_status,
+     slot.n_loading_point_id,
+     lp.vc_code as vcLoadingPointCode,
+     lp.vc_name as vcLoadingPointName,
+     lp.vc_comment as vcLoadingPointComment,
+     lp.n_store_id,
+     lp.vc_store_code,
+     lp.vc_store_name,
+     slot.n_client_id,
+     c.vc_code as vcClientCode,
+     c.vc_name as vcClientName
+ FROM slot
+     JOIN v_loading_point lp on lp.n_loading_point_id = slot.n_loading_point_id
+     JOIN v_client c on c.n_client_id = slot.n_client_id
+ ;

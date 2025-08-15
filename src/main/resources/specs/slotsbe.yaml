@@ -61,6 +61,48 @@ paths:
               schema:
                 $ref: "#/components/schemas/slotDtos"
 
+  /clients:
+    get:
+      summary: Выборка списка клиентов
+      operationId: getСlients
+      tags:
+        - REF
+      responses:
+        200:
+          description: Список клиентов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/clientDtos"
+
+  /stores:
+    get:
+      summary: Выборка списка нефтебаз
+      operationId: getStores
+      tags:
+        - REF
+      responses:
+        200:
+          description: Список нефтебаз
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/storeDtos"
+
+  /loadingPoints:
+    get:
+      summary: Выборка списка пунктов налива
+      operationId: getLoadingPoints
+      tags:
+        - REF
+      responses:
+        200:
+          description: Список пунктов налива
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/loadingPointDtos"
+
 components:
   schemas:
     page:
@@ -129,19 +171,74 @@ components:
       type: object
       description: Слот
       properties:
-        id:
+        nSlotId:
           type: integer
           format: int64
           description: Идентификатор
           example: 1
-        name:
+        dDate:
           type: string
-          description: Наименование
+          format: date
+          description: Дата слота
+          example: 2025-07-12
+        dStartTime:
+          type: string
+          description: Время начала слота
+          format: time
+          example: 14:30:00
+        dEndTime:
+          type: string
+          format: time
+          description: Время окончания слота
+          example: 14:30:00
+        nLoadingPointId:
+          type: integer
+          format: int64
+          description: Идентификатор пункта отпуска
+          example: 1
+        vcLoadingPointCode:
+          type: string
+          description: Код пункта отпуска
+          example: Код 1
+        vcLoadingPointName:
+          type: string
+          description: Наименование пункта отпуска
           example: Наименование 1
-        description:
+        vcLoadingPointComment:
           type: string
-          description: Описание
-          example: Описание 1
+          description: Комментарий
+          example: Комментарий 1
+        nStoreId:
+          type: integer
+          format: int64
+          description: Идентификатор нефтебазы
+          example: 1
+        vcStoreCode:
+          type: string
+          description: Код нефтебазы
+          example: Код 1
+        vcStoreName:
+          type: string
+          description: Наименование нефтебазы
+          example: Наименование 1
+        nClientId:
+          type: integer
+          format: int64
+          description: Идентификатор клиента
+          example: 1
+        vcClientCode:
+          type: string
+          description: Код клиента
+          example: Код 1
+        vcClientName:
+          type: string
+          description: Наименование клиента
+          example: Наименование 1
+        vcStatus:
+          type: string
+          description: Статус (F - free, B - busy)
+          example: B
+
     modifiedSlotDtos:
       type: array
       description: Список изменений слотов
@@ -151,14 +248,93 @@ components:
       type: object
       description: Изменение слота
       properties:
-        slotId:
+        nSlotId:
           type: integer
           format: int64
           description: Идентификатор слота
           example: 1
-        status:
+        vcStatus:
+          type: string
+          description: Статус (F - free, B - busy)
+          example: B
+    clientDtos:
+      type: array
+      description: Список клиентов
+      items:
+        $ref: "#/components/schemas/clientDto"
+    clientDto:
+      type: object
+      description: Клиент
+      properties:
+        nClientId:
           type: integer
           format: int64
-          description: 0 - свободен,  1- занято
+          description: Идентификатор
           example: 1
+        vcCode:
+          type: string
+          description: код
+          example: Код 1
+        vcName:
+          type: string
+          description: Наименование
+          example: Наименование 1
+    storeDtos:
+      type: array
+      description: Список нефтебаз
+      items:
+        $ref: "#/components/schemas/storeDto"
+    storeDto:
+      type: object
+      description: Нефтебаза
+      properties:
+        nStoreId:
+          type: integer
+          format: int64
+          description: Идентификатор
+          example: 1
+        vcCode:
+          type: string
+          description: код
+          example: Код 1
+        vcName:
+          type: string
+          description: Наименование
+          example: Наименование 1
 
+
+    loadingPointDtos:
+      type: array
+      description: Список пунктов налива
+      items:
+        $ref: "#/components/schemas/loadingPointDto"
+    loadingPointDto:
+      type: object
+      description: Пункт налива
+      properties:
+        nLoadingPointId:
+          type: integer
+          format: int64
+          description: Идентификатор
+          example: 1
+        nStoreId:
+          type: integer
+          format: int64
+          description: Идентификатор нефтебазы
+          example: 1
+        vcStoreName:
+          type: string
+          description: Наименование нефтебазы
+          example: Наименование нефтебазы 1
+        vcCode:
+          type: string
+          description: Код
+          example: Код 1
+        vcName:
+          type: string
+          description: Наименование
+          example: Наименование 1
+        vcComment:
+          type: string
+          description: Комментарий
+          example: Комментарий 1

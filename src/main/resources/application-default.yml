@@ -36,7 +36,6 @@ spring:
 #    url: ${DATABASE_URL:jdbc:postgresql://192.168.222.17:5432/straf}
 #    username: ${DATABASE_USER:postgres}
 #    password: ${DATABASE_PASSWORD:postgres}
-#    url=jdbc:h2:mem:testdb;MODE=Oracle;DB_CLOSE_DELAY=-1
     url: jdbc:h2:mem:testdb;MODE=Oracle;DB_CLOSE_DELAY=-1
     driver-class-name: org.h2.Driver
     username: sa

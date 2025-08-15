@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ClientUserRepository extends JpaRepository<ClientUser, Long> {
-    Optional<ClientUser> findByLogin(String login);
-    List<ClientUser> findAllByLogin(String login);
+    Optional<ClientUser> findByVcLogin(String login);
+    List<ClientUser> findAllByVcLogin(String login);
 
 }

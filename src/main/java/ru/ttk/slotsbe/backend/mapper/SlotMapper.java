@@ -1,6 +1,7 @@
 package ru.ttk.slotsbe.backend.mapper;
 
 import org.springframework.stereotype.Service;
+import ru.ttk.slotsbe.backend.dto.SlotDto;
 import ru.ttk.slotsbe.backend.model.*;
 import ru.ttk.slotsbe.backend.util.CoreUtil;
 
@@ -20,7 +21,6 @@ public class SlotMapper {
     public SlotDto fromViewToDto(VSlot view) {
         SlotDto result = new SlotDto();
         CoreUtil.patch(view, result);
-
         return result;
     }
 

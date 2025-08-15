@@ -4,6 +4,7 @@ import lombok.Getter;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Getter
+@Table(name = "v_slot")
 public class VSlot {
 
 
@@ -24,7 +26,7 @@ public class VSlot {
     /**
      * Дата слота
      */
-    LocalDate slotDate;
+    LocalDate dDate;
 
     /**
      * Слот - Время начала

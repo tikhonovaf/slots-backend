@@ -23,13 +23,7 @@ import java.util.stream.Collectors;
 public class SlotApiService implements SlotsApiDelegate {
 
     @Autowired
-    private UserService userService;
-
-    @Autowired
-    private SlotRepository slotRepository;
-
-    @Autowired
-    private SlotViewRepository slotViewRepository;
+    private VSlotRepository vSlotRepository;
 
     @Autowired
     private SlotMapper slotMapper;
@@ -38,15 +32,18 @@ public class SlotApiService implements SlotsApiDelegate {
      * Список слотов
      */
     @Override
-    public ResponseEntity<List<SlotDto>> getSlots() {
+    public ResponseEntity<List<SlotDto>> getSlotsByFilters(SlotSearchFilter slotSearchFilter) {
+
+//      Формирование выборки из View по заданным фильтрам
         List<SlotDto>  result =
-                    slotViewRepository
-                            .findAll()
-                            .stream()
-                            .map(v -> slotMapper.fromViewToDto(v))
-                            .collect(Collectors.toList());
+                vSlotRepository
+                        .findAll()
+                        .stream()
+                        .map(v -> slotMapper.fromViewToDto(v))
+                        .collect(Collectors.toList());
 
         return ResponseEntity.ok(result);
+
     }
 
     /**

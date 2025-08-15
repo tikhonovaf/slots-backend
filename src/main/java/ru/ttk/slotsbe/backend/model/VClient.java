@@ -5,12 +5,14 @@ import lombok.Getter;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
  * Клиент
  */
 @Entity
 @Getter
+@Table(name = "v_client")
 public class VClient {
 
     /**

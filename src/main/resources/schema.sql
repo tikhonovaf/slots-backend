@@ -85,8 +85,8 @@ CREATE TABLE IF NOT EXISTS slot (
      lp.vc_store_code,
      lp.vc_store_name,
      slot.n_client_id,
-     c.vc_code as vcClientCode,
-     c.vc_name as vcClientName
+     c.vc_code as vc_client_code,
+     c.vc_name as vc_client_name
  FROM slot
      JOIN v_loading_point lp on lp.n_loading_point_id = slot.n_loading_point_id
      JOIN v_client c on c.n_client_id = slot.n_client_id

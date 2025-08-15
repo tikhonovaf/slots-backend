@@ -30,19 +30,25 @@ paths:
         200:
           description: Пустой ответ
 
-  /slots:
+  /slots/search:
     post:
-      summary: Выборка списка слотов
-      operationId: getSlots
+      summary: Выборка списка слотов с фильтром
+      operationId: getSlotsByFilters
       tags:
         - SLOT
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/slotSearchFilter"
       responses:
         200:
-          description: Список слотов с фильтром
+          description: Список слотов
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/slotDtos"
+  /slots/:
     patch:
       summary: Редактирование слотов
       operationId: modifySlots
@@ -162,6 +168,18 @@ components:
           type: string
           description: Наименование
           example: Наименование 1
+
+#    slotSearchResultDto:
+#      description: Список слотов
+#      type: object
+#      properties:
+#        slotDtos:
+#          type: array
+#          items:
+#            $ref: "#/components/schemas/slotDto"
+#        page:
+#          $ref: "#/components/schemas/page"
+
     slotDtos:
       type: array
       description: Список слотов
@@ -338,3 +356,23 @@ components:
           type: string
           description: Комментарий
           example: Комментарий 1
+
+    slotSearchDto:
+      type: object
+      description: Параметры выборки списка слотов
+      properties:
+        slotSearchFilter:
+          $ref: "#/components/schemas/slotSearchFilter"
+    slotSearchFilter:
+      description: Фильтр для выборки списка слотов
+      type: object
+      properties:
+        nStoreId:
+          type: integer
+          format: int64
+          description: Идентификатор нефтебазы
+          example: 1
+        vcStatus:
+          type: string
+          description: Статус
+          example: B

@@ -13,15 +13,15 @@ import javax.inject.Inject;
 @Component
 public class DaoUserDetailsService implements UserDetailsService {
     @Inject
-    private ClientUserRepository strafUserRepository;
+    private ClientUserRepository clientUserRepository;
 
     @Override
     public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException {
-        ClientUser user = strafUserRepository.findByLogin(login)
+        ClientUser user = clientUserRepository.findByVcLogin(login)
                 .orElseThrow(() -> new UsernameNotFoundException("Username " + login + " not found!"));
 
         return User.withUsername(login)
-                .password(user.getPassword())
+                .password(user.getVcPassword())
                 .roles("ADMIN")
                 .build();
     }

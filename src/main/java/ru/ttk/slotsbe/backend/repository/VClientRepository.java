@@ -1,10 +1,10 @@
 package ru.ttk.slotsbe.backend.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import ru.ttk.slotsbe.backend.model.VClient;
 
 import java.util.List;
 
 
-public interface ClientViewRepository extends JpaRepository<ClientView, Long> {
-    List<ClientView> findAllByName(String name);
+public interface VClientRepository extends JpaRepository<VClient, Long> {
 }

@@ -3,9 +3,6 @@ package ru.ttk.slotsbe.backend.mapper;
 import org.springframework.stereotype.Service;
 import ru.ttk.slotsbe.backend.model.*;
 import ru.ttk.slotsbe.backend.util.CoreUtil;
-import ru.ttk.slotsbe.backend.dto.*;
-
-import java.util.Optional;
 
 /**
  * Маппинг:
@@ -20,7 +17,7 @@ public class SlotMapper {
      * @param view - строка из view SlotView
      * @return Данные в структуре DTO
      */
-    public SlotDto fromViewToDto(SlotView view) {
+    public SlotDto fromViewToDto(VSlot view) {
         SlotDto result = new SlotDto();
         CoreUtil.patch(view, result);
 

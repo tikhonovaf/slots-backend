@@ -16,58 +16,58 @@ public class ClientUser {
      * Идентификатор
      */
     @Id
-    Long id;
+    Long nUserId;
 
     /**
      * имя
      */
-    String firstName;
+    String vcFirstName;
 
     /**
      * Фамилия
      */
-    String lastName;
+    String vcLastName;
 
     /**
      * Отчество
      */
-    String secondName;
+    String vcSecondName;
 
     /**
      * Логин
      */
-    String login;
+    String vcLogin;
 
     /**
      * Пароль
      */
-    String password;
+    String vcPassword;
 
     /**
      * Дата начала действия
      */
-    LocalDate startDate;
+    LocalDate dStartDate;
 
     /**
      * Дата окончания действия
      */
-    LocalDate endDate;
+    LocalDate dEndDate;
 
     /**
      * client
      */
-    @ManyToOne
-    Client client;
+
+    Long nClientId;
 
     /**
      * email
      */
-    String email;
+    String vcEmail;
 
     /**
      * phone
      */
-    String phone;
+    String vcPhone;
 
 
 }

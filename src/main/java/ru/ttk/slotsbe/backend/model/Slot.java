@@ -19,21 +19,7 @@ public class Slot {
      * Идентификатор
      */
     @Id
-    Long id;
-
-    /**
-     * Статус
-     */
-    String status;
-
-    /**
-     * Адрес
-     */
-    /**
-     * Клиент
-     */
-    @ManyToOne
-    Client client;
+    Long nSlotId;
 
     /**
      * Дата слота
@@ -41,13 +27,28 @@ public class Slot {
     LocalDate slotDate;
 
     /**
-     * Слот - Дата начала
+     * Идентификатор пункта налива
      */
-    LocalDateTime slotDateTimeBegin;
+    Long nLoadingPointId;
 
     /**
-     * Слот - Дата окончания
+     * Идентификатор клиента
      */
-    LocalDateTime slotDateTimeEnd;
+    Long nClientId;
+
+    /**
+     * Слот - Время начала
+     */
+    LocalDateTime dStartTime;
+
+    /**
+     * Слот - Время окончания
+     */
+    LocalDateTime dEndTime;
+
+    /**
+     * Статус
+     */
+    String vcStatus;
 
 }

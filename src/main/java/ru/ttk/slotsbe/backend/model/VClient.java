@@ -2,32 +2,31 @@ package ru.ttk.slotsbe.backend.model;
 
 import com.sun.istack.NotNull;
 import lombok.Getter;
-import lombok.Setter;
 
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import java.time.LocalDateTime;
-//// import javax.validation.constraints.NotNull;
 
 /**
- * Created by Tikhonov Arkadiy
+ * Клиент
  */
 @Entity
 @Getter
-@Setter
-public class ClientView {
+public class VClient {
 
     /**
      * Идентификатор
      */
     @Id
-    Long id;
+    Long nClientId;
+
+    /**
+     * Код
+     */
+    String vcCode;
 
     /**
      * Наименование
      */
-    @NotNull
-    String name;
+    String vcName;
 
 }

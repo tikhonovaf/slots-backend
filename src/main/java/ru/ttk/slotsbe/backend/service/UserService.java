@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import ru.ttk.slotsbe.backend.model.ClientUser;
-import ru.ttk.slotsbe.backend.model.Client;
+import ru.ttk.slotsbe.backend.model.VClient;
 import ru.ttk.slotsbe.backend.repository.ClientUserRepository;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,7 +41,7 @@ public class UserService {
     /**
      * Определение организации текущего пользователя
      */
-    public Client getCurrentUserClient() {
+    public VClient getCurrentUserClient() {
         ClientUser strafUser = getCurrentUser();
 //        if (strafUser != null) {
 //            return strafUser.getOrg();

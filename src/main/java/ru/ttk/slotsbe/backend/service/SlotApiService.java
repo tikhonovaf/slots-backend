@@ -34,7 +34,7 @@ public class SlotApiService implements SlotsApiDelegate {
     @Override
     public ResponseEntity<List<SlotDto>> getSlotsByFilters(SlotSearchFilter slotSearchFilter) {
 
-//      Формирование выборки из View по заданным фильтрам
+//      Формирование выборки из View по заданным фильтрам уточненное
         List<SlotDto>  result =
                 vSlotRepository
                         .findAll()

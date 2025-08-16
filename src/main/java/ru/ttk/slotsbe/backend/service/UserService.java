@@ -42,9 +42,9 @@ public class UserService {
      * Определение организации текущего пользователя
      */
     public VClient getCurrentUserClient() {
-        ClientUser strafUser = getCurrentUser();
-//        if (strafUser != null) {
-//            return strafUser.getOrg();
+        ClientUser clientUser = getCurrentUser();
+//        if (clientUser != null) {
+//            return clientUser.getOrg();
 //        } else
 
         return null;

@@ -29,7 +29,7 @@ public class StoreApiService implements StoresApiDelegate {
     private StoreMapper StoreMapper;
 
     /**
-     * Список клиентов
+     * Список нефтебаз
      */
     @Override
     public ResponseEntity<List<StoreDto>> getStores() {

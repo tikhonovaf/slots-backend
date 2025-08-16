@@ -50,8 +50,8 @@ paths:
                 $ref: "#/components/schemas/slotDtos"
   /slots/:
     patch:
-      summary: Редактирование слотов
-      operationId: modifySlots
+      summary: Резервирование слотов
+      operationId: reserveSlots
       tags:
         - SLOT
       requestBody:
@@ -61,11 +61,7 @@ paths:
               $ref: "#/components/schemas/modifiedSlotDtos"
       responses:
         200:
-          description: Список слотов
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/slotDtos"
+          description: Пустой ответ
 
   /clients:
     get:
@@ -271,6 +267,11 @@ components:
           format: int64
           description: Идентификатор слота
           example: 1
+        nClientId:
+          type: integer
+          format: int64
+          description: Идентификатор клиента
+          example: 1
         vcStatus:
           type: string
           description: Статус (F - free, B - busy)
@@ -372,6 +373,16 @@ components:
           format: int64
           description: Идентификатор нефтебазы
           example: 1
+        nClientId:
+          type: integer
+          format: int64
+          description: Идентификатор клиента
+          example: 1
+        dDate:
+          type: string
+          format: date
+          description: Дата слота
+          example: 2025-07-12
         vcStatus:
           type: string
           description: Статус

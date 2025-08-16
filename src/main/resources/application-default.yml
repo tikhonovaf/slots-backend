@@ -43,8 +43,8 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
-      jdbc:
-        batch_versioned_data: true
+    jdbc:
+      batch_versioned_data: true
     properties:
       hibernate:
         format_sql: true
@@ -52,6 +52,7 @@ spring:
           batch_size: 20
         order_inserts: true
         order_updates: true
+    show-sql: true
   h2:
     console:
       enabled:true

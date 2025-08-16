@@ -61,7 +61,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilter(authenticationFilter())
                 .csrf().disable()
                 .authorizeRequests()
-                    .antMatchers("/**").permitAll()
+                    .antMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html","/**").permitAll()
                      //env.getRequiredProperty("common.control.allow.origin")
                 .and()
                 .logout().permitAll().logoutUrl("/api/logout").deleteCookies("JSESSIONID")

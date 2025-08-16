@@ -63,7 +63,8 @@ spring:
     multipart:
       max-file-size: 150MB
       max-request-size: 150MB
-    springdoc:
-      swagger-ui:
-        url: /v3/api-docs
-        config-url: /v3/api-docs/swagger-config
+springdoc:
+  swagger-ui:
+    urls:
+      - url: /v3/api-docs
+        name: slots-backend

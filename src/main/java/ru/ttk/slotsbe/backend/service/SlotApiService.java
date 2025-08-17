@@ -3,6 +3,7 @@ package ru.ttk.slotsbe.backend.service;//package ru.ttk.slotsbe.backend.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -76,9 +77,10 @@ public class SlotApiService implements SlotsApiDelegate {
      * @param slotSearchFilter (optional)
      * @return Excel файл (status code 200)
      */
-    public ResponseEntity<org.springframework.core.io.Resource> downloadSlotsToExcel(SlotSearchFilter slotSearchFilter) {
 
-        //      Формирование выборки из View по заданным фильтрам
+    public ResponseEntity<Resource> downloadSlotsToExcel(SlotSearchFilter slotSearchFilter) {
+
+        //  Формирование выборки из View по заданным фильтрам
         List<VSlot> slots = vSlotRepository
                 .findAllByFilter(slotSearchFilter.getnStoreIds(), slotSearchFilter.getnClientIds(),
                         slotSearchFilter.getVcStatus(), slotSearchFilter.getdDate());

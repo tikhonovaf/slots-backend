@@ -63,6 +63,26 @@ paths:
         200:
           description: Пустой ответ
 
+  /slots/download:
+    post:
+      tags:
+        - SLOT
+      summary: Выгрузка слотов в Excel файл
+      operationId: downloadSlotsToExcel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/slotSearchFilter"
+      responses:
+        200:
+          description: Excel файл
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+
   /clients:
     get:
       summary: Выборка списка клиентов

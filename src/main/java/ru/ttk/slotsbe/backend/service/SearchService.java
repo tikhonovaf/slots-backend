@@ -6,10 +6,10 @@ import ru.ttk.slotsbe.backend.dto.Page;
 import ru.ttk.slotsbe.backend.dto.*;
 import ru.ttk.slotsbe.backend.model.ClientUser;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.*;
 import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

@@ -2,7 +2,7 @@ package ru.ttk.slotsbe.backend.model;
 
 import lombok.Getter;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDate;
 
 /**

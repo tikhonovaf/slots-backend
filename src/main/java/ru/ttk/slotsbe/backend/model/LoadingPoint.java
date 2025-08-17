@@ -2,8 +2,8 @@ package ru.ttk.slotsbe.backend.model;
 
 import lombok.Getter;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 
 /**
  * Пункт налива

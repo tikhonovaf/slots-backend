@@ -63,6 +63,26 @@ paths:
         200:
           description: Пустой ответ
 
+  /slots/download:
+    post:
+      tags:
+        - SLOT
+      summary: Выгрузка слотов в Excel файл
+      operationId: downloadSlotsToExcel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/slotSearchFilter"
+      responses:
+        200:
+          description: Excel файл
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+
   /clients:
     get:
       summary: Выборка списка клиентов
@@ -164,17 +184,6 @@ components:
           type: string
           description: Наименование
           example: Наименование 1
-
-#    slotSearchResultDto:
-#      description: Список слотов
-#      type: object
-#      properties:
-#        slotDtos:
-#          type: array
-#          items:
-#            $ref: "#/components/schemas/slotDto"
-#        page:
-#          $ref: "#/components/schemas/page"
 
     slotDtos:
       type: array
@@ -368,16 +377,18 @@ components:
       description: Фильтр для выборки списка слотов
       type: object
       properties:
-        nStoreId:
-          type: integer
-          format: int64
-          description: Идентификатор нефтебазы
-          example: 1
-        nClientId:
-          type: integer
-          format: int64
-          description: Идентификатор клиента
-          example: 1
+        nStoreIds:
+          description: Список идентификаторов нефтебаз
+          type: array
+          items:
+            type: integer
+            format: int64
+        nClientIds:
+          description: Список иентификаторов клиента
+          type: array
+          items:
+            type: integer
+            format: int64
         dDate:
           type: string
           format: date
@@ -387,3 +398,17 @@ components:
           type: string
           description: Статус
           example: B
+#    idDtos:
+#      type: array
+#      description: Список идентификаторов
+#      items:
+#        $ref: "#/components/schemas/idDto"
+#    idDto:
+#      type: object
+#      description: Идентификатор
+#      properties:
+#        id:
+#          type: integer
+#          format: int64
+#          description: Идентификатор
+#          example: 1

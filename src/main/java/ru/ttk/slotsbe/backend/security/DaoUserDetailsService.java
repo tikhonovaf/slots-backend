@@ -1,5 +1,6 @@
 package ru.ttk.slotsbe.backend.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -8,11 +9,11 @@ import org.springframework.stereotype.Component;
 import ru.ttk.slotsbe.backend.model.ClientUser;
 import ru.ttk.slotsbe.backend.repository.ClientUserRepository;
 
-import javax.inject.Inject;
+//import jakarta.inject.Inject;
 
 @Component
 public class DaoUserDetailsService implements UserDetailsService {
-    @Inject
+    @Autowired
     private ClientUserRepository clientUserRepository;
 
     @Override

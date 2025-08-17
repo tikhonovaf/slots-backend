@@ -9,7 +9,7 @@ import ru.ttk.slotsbe.backend.model.ClientUser;
 import ru.ttk.slotsbe.backend.model.VClient;
 import ru.ttk.slotsbe.backend.repository.ClientUserRepository;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.util.Optional;
 

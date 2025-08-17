@@ -24,7 +24,7 @@ public class ExcelGenerator {
             // Заголовки
             Row headerRow = sheet.createRow(0);
             String[] headers = {"Дата слота", "Время начала", "Время окончания", "Статус",
-               "Нефтебаза", "Пункт налива", "Кдиент" };
+               "Нефтебаза", "Пункт налива", "Клиент" };
 
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);

@@ -31,7 +31,7 @@
         <springdoc-swagger.version>1.6.4</springdoc-swagger.version>
         <swagger-annotations.version>1.5.21</swagger-annotations.version>
         <swagger-models.version>1.5.21</swagger-models.version>
-        <openapi-generator-maven-plugin.version>6.6.0</openapi-generator-maven-plugin.version>
+        <openapi-generator-maven-plugin.version>7.13.0</openapi-generator-maven-plugin.version>
         <openapi.generator.maven.plugin.generatorName>spring</openapi.generator.maven.plugin.generatorName>
         <jackson-databind-nullable.version>0.1.0</jackson-databind-nullable.version>
     </properties>
@@ -202,40 +202,6 @@
             <version>21.11.0.0</version>
             <scope>runtime</scope>
         </dependency>
-
-<!--&lt;!&ndash;         https://mvnrepository.com/artifact/ch.qos.logback/logback-classic&ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>ch.qos.logback</groupId>-->
-<!--            <artifactId>logback-classic</artifactId>-->
-<!--            <version>1.4.14</version>-->
-<!--&lt;!&ndash;            <scope>test</scope>&ndash;&gt;-->
-<!--        </dependency>-->
-
-<!--        &lt;!&ndash; https://mvnrepository.com/artifact/ch.qos.logback/logback-core &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>ch.qos.logback</groupId>-->
-<!--            <artifactId>logback-core</artifactId>-->
-<!--            <version>1.4.14</version>-->
-<!--        </dependency>-->
-
-<!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.slf4j/slf4j-api &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>org.slf4j</groupId>-->
-<!--            <artifactId>slf4j-api</artifactId>-->
-<!--            <version>2.0.12</version>-->
-<!--        </dependency>-->
-        <dependency>
-            <groupId>org.redisson</groupId>
-            <artifactId>redisson-spring-data-16</artifactId>
-            <version>3.20.0</version>
-        </dependency>
-        <!-- Clickhouse-jdbc -->
-        <dependency>
-            <groupId>ru.yandex.clickhouse</groupId>
-            <artifactId>clickhouse-jdbc</artifactId>
-            <version>${clickhouse-jdbc-version}</version>
-        </dependency>
-
     </dependencies>
 
     <build>
@@ -265,19 +231,22 @@
                             <modelPackage>ru.ttk.slotsbe.backend.dto</modelPackage>
                             <supportingFilesToGenerate>ApiUtil.java</supportingFilesToGenerate>
                             <configOptions>
+                                <dateLibrary>java8</dateLibrary> <!-- Важно для LocalDate -->
+                                <java8>true</java8> <!-- Включает поддержку Java 8+ (актуально и для 17) -->
+                                <useBeanValidation>true</useBeanValidation> <!-- Для @Valid и аннотаций валидации -->
                                 <delegatePattern>true</delegatePattern>
                                 <skip-validate-spec>false</skip-validate-spec>
                                 <sourceFolder>src/gen/java/main</sourceFolder>
-                                <dateLibrary>java17</dateLibrary>
-                                <java17>false</java17>
                                 <interfaceOnly>false</interfaceOnly>
                             </configOptions>
                             <typeMappings>
-                                <typeMapping>OffsetDateTime=LocalDateTime</typeMapping>
+                                <typeMapping>date=LocalDate</typeMapping>
+                                <typeMapping>time=LocalTime</typeMapping>
                             </typeMappings>
-                            <importMappings>
-                                <importMapping>java.time.OffsetDateTime=java.time.LocalDateTime</importMapping>
-                            </importMappings>
+<!--                            <importMappings>-->
+<!--&lt;!&ndash;                                <importMapping>java.time.LocalTime</importMapping>&ndash;&gt;-->
+<!--                                <importMapping>java.time.LocalDate</importMapping>-->
+<!--                            </importMappings>-->
                         </configuration>
                     </execution>
 

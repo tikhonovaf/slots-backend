@@ -4,7 +4,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import ru.ttk.slotsbe.backend.model.VSlot;
 
-import java.util.Date;
+import javax.validation.Valid;
+import java.time.LocalDate;
 import java.util.List;
 
 public interface VSlotRepository extends JpaRepository<VSlot, Long> {
@@ -16,5 +17,5 @@ public interface VSlotRepository extends JpaRepository<VSlot, Long> {
             " AND (:dDate IS NULL OR d_date = :dDate)\n" +
             "   ORDER BY n_store_id, d_date, d_start_time \n"
             , nativeQuery = true)
-    List<VSlot> findAllByFilter(Long nStoreId, Long nClientId, String vcStatus, Date dDate);
+    List<VSlot> findAllByFilter(Long nStoreId, Long nClientId, String vcStatus, @Valid LocalDate dDate);
 }

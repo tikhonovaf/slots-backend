@@ -7,6 +7,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 /**
  * Created by Tikhonov Arkadiy
@@ -31,12 +32,12 @@ public class VSlot {
     /**
      * Слот - Время начала
      */
-    LocalDateTime dStartTime;
+    LocalTime dStartTime;
 
     /**
      * Слот - Время окончания
      */
-    LocalDateTime dEndTime;
+    LocalTime dEndTime;
 
     /**
      * Статус

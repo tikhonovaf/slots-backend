@@ -11,11 +11,11 @@ import java.util.List;
 public interface VSlotRepository extends JpaRepository<VSlot, Long> {
 
     @Query(value = "SELECT * FROM v_slot\n" +
-            "WHERE (:nStoreId IS NULL OR n_store_id = :nStoreId )\n" +
-            " AND (:nClientId IS NULL OR n_client_id = :nClientId)\n" +
+            "WHERE (:nStoreIds IS NULL OR n_store_id IN (:nStoreIds) )\n" +
+            " AND (:nClientIds IS NULL OR n_client_id IN (:nClientIds))\n" +
             " AND (:vcStatus IS NULL OR vc_status = :vcStatus)\n" +
             " AND (:dDate IS NULL OR d_date = :dDate)\n" +
             "   ORDER BY n_store_id, d_date, d_start_time \n"
             , nativeQuery = true)
-    List<VSlot> findAllByFilter(Long nStoreId, Long nClientId, String vcStatus, @Valid LocalDate dDate);
+    List<VSlot> findAllByFilter(List <Long> nStoreIds, List <Long> nClientIds, String vcStatus, @Valid LocalDate dDate);
 }

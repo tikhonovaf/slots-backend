@@ -1,5 +1,6 @@
 package ru.ttk.slotsbe.backend.model;
 
+import jakarta.persistence.Column;
 import lombok.Getter;
 
 import jakarta.persistence.Entity;
@@ -18,6 +19,7 @@ public class VClient {
      * Идентификатор
      */
     @Id
+    @Column(name = "n_client_id")
     Long nClientId;
 
     /**

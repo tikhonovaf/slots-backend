@@ -29,13 +29,13 @@ spring:
       max-page-size: 10000
       returnBodyOnCreate: true
       returnBodyOnUpdate: true
-#  sql:
-#    init:
-#      mode: always
+  #  sql:
+  #    init:
+  #      mode: always
   datasource:
-#    url: ${DATABASE_URL:jdbc:postgresql://192.168.222.17:5432/straf}
-#    username: ${DATABASE_USER:postgres}
-#    password: ${DATABASE_PASSWORD:postgres}
+    #    url: ${DATABASE_URL:jdbc:postgresql://192.168.222.17:5432/straf}
+    #    username: ${DATABASE_USER:postgres}
+    #    password: ${DATABASE_PASSWORD:postgres}
     url: jdbc:h2:mem:testdb;MODE=Oracle;DB_CLOSE_DELAY=-1
     driver-class-name: org.h2.Driver
     username: sa
@@ -64,6 +64,23 @@ spring:
     multipart:
       max-file-size: 150MB
       max-request-size: 150MB
+  mail:
+    host: smtp.yandex.ru
+    port: 465
+    username: tikhonovafZel@yandex.ru
+    password: lrvbtcwgqqmfupgp
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+            starttls:
+              enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
 springdoc:
   swagger-ui:
     urls:

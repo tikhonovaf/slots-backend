@@ -18,4 +18,11 @@ public interface VSlotRepository extends JpaRepository<VSlot, Long> {
             "   ORDER BY n_store_id, d_date, d_start_time \n"
             , nativeQuery = true)
     List<VSlot> findAllByFilter(List <Long> nStoreIds, List <Long> nClientIds, String vcStatus, @Valid LocalDate dDate);
+
+    @Query(value = "SELECT * FROM v_slot\n" +
+            "WHERE n_client_id = :nClientId" +
+            "   ORDER BY n_store_id, d_date, d_start_time \n"
+            , nativeQuery = true)
+    List<VSlot> findAllByNClientId(Long nClientId);
+
 }

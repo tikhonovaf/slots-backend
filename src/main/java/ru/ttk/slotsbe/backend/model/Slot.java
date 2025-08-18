@@ -1,5 +1,6 @@
 package ru.ttk.slotsbe.backend.model;
 
+import jakarta.persistence.Column;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,11 +32,13 @@ public class Slot {
     /**
      * Идентификатор пункта налива
      */
+    @Column(name = "n_loading_point_id")
     Long nLoadingPointId;
 
     /**
      * Идентификатор клиента
      */
+    @Column(name = "n_client_id")
     Long nClientId;
 
     /**

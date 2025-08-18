@@ -128,8 +128,8 @@
             <version>2.13.5</version>
         </dependency>
 
-<!--        Добавленные из-за безопасников-->
-<!--         https://mvnrepository.com/artifact/org.yaml/snakeyaml-->
+        <!--        Добавленные из-за безопасников-->
+        <!--         https://mvnrepository.com/artifact/org.yaml/snakeyaml-->
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
@@ -173,7 +173,10 @@
             <artifactId>poi-ooxml</artifactId>
             <version>5.2.3</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -197,7 +200,7 @@
                         </goals>
                         <configuration>
                             <inputSpec>${project.basedir}/src/main/resources/specs/slotsbe.yaml</inputSpec>
-<!--                            <language>spring</language>-->
+                            <!--                            <language>spring</language>-->
                             <apiPackage>ru.ttk.slotsbe.backend.api</apiPackage>
                             <modelPackage>ru.ttk.slotsbe.backend.dto</modelPackage>
                             <supportingFilesToGenerate>ApiUtil.java</supportingFilesToGenerate>
@@ -216,10 +219,6 @@
                                 <typeMapping>date=LocalDate</typeMapping>
                                 <typeMapping>time=LocalTime</typeMapping>
                             </typeMappings>
-<!--                            <importMappings>-->
-<!--&lt;!&ndash;                                <importMapping>java.time.LocalTime</importMapping>&ndash;&gt;-->
-<!--                                <importMapping>java.time.LocalDate</importMapping>-->
-<!--                            </importMappings>-->
                         </configuration>
                     </execution>
 
@@ -273,6 +272,4 @@
             </snapshots>
         </pluginRepository>
     </pluginRepositories>
-
-
 </project>

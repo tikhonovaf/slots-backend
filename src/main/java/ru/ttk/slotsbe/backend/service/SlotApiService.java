@@ -1,5 +1,6 @@
 package ru.ttk.slotsbe.backend.service;//package ru.ttk.slotsbe.backend.service;
 
+import jakarta.mail.MessagingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -13,7 +14,7 @@ import ru.ttk.slotsbe.backend.mapper.SlotMapper;
 import ru.ttk.slotsbe.backend.model.*;
 import ru.ttk.slotsbe.backend.repository.*;
 import ru.ttk.slotsbe.backend.api.*;
-import ru.ttk.slotsbe.backend.util.ExcelGenerator;
+import ru.ttk.slotsbe.backend.util.ExcelReportGenerator;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,6 +36,12 @@ public class SlotApiService implements SlotsApiDelegate {
 
     @Autowired
     private SlotMapper slotMapper;
+
+    @Autowired
+    private ClientUserRepository clientUserRepository;
+
+    @Autowired
+    private EmailService emailService;
 
     /**
      * Список слотов
@@ -88,7 +95,7 @@ public class SlotApiService implements SlotsApiDelegate {
         // Генерируем Excel в памяти
         byte[] excelBytes = null;
         try {
-            excelBytes = ExcelGenerator.generateExcel(slots);
+            excelBytes = ExcelReportGenerator.generateExcel(slots);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -102,6 +109,48 @@ public class SlotApiService implements SlotsApiDelegate {
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .contentLength(excelBytes.length)
                 .body(resource);
+    }
+
+    /**
+     * PATCH /slots/mails : Отправка писем со слотами пользователям
+     *
+     * @param ids  (optional)
+     * @return Пустой ответ (status code 200)
+     */
+    public ResponseEntity<Void> sendMailsToUsers(List<Long> ids) {
+
+        // Выбираем список пользователей
+        List<ClientUser> users = clientUserRepository.findAllByNUserIds(ids);
+
+        // Выбираем список слотов на сегодняшний день и после для клиента, по заданному идентификатору пользователя
+        for (ClientUser user : users) {
+            List<VSlot> slots = vSlotRepository.findAllByNClientId(user.getNClientId());
+            String emailTo = user.getVcEmail();
+            // Генерируем Excel в памяти
+            byte[] excelBytes = null;
+            try {
+                excelBytes = ExcelReportGenerator.generateExcel(slots);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+            // 3. Отправляем email с вложением
+            try {
+                emailService.sendEmailWithExcelAttachment(
+                        emailTo,
+                        "Customer Report",
+                        "Please find attached the customer report.",
+                        excelBytes,
+                        "customers_report.xlsx"
+                );
+            } catch (MessagingException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+        return ResponseEntity.noContent().build();
+
     }
 
 }

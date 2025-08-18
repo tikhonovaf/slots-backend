@@ -2,15 +2,12 @@ package ru.ttk.slotsbe.backend.util;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import ru.ttk.slotsbe.backend.model.Slot;
 import ru.ttk.slotsbe.backend.model.VSlot;
 
 import java.io.ByteArrayOutputStream;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 
-public class ExcelGenerator {
+public class ExcelMailGenerator {
 
     public static byte[] generateExcel(List<VSlot> slots) throws Exception {
         try (Workbook workbook = new XSSFWorkbook();

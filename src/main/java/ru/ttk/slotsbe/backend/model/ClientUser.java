@@ -16,6 +16,7 @@ public class ClientUser {
      * Идентификатор
      */
     @Id
+    @Column(name = "n_user_id")
     Long nUserId;
 
     /**
@@ -57,6 +58,7 @@ public class ClientUser {
      * client
      */
 
+    @Column(name = "n_client_id")
     Long nClientId;
 
     /**

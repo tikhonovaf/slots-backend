@@ -1,5 +1,6 @@
 package ru.ttk.slotsbe.backend.model;
 
+import jakarta.persistence.Column;
 import lombok.Getter;
 
 import jakarta.persistence.Entity;
@@ -21,6 +22,7 @@ public class LoadingPoint {
     /**
      * Идентификатор нефтебазы
      */
+    @Column(name = "n_store_id")
     Long nStoreId;
 
     /**

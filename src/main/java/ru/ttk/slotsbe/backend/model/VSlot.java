@@ -1,5 +1,6 @@
 package ru.ttk.slotsbe.backend.model;
 
+import jakarta.persistence.Column;
 import lombok.Getter;
 
 import jakarta.persistence.Entity;
@@ -47,6 +48,7 @@ public class VSlot {
     /**
      * Идентификатор пункта налива
      */
+    @Column(name = "n_loading_point_id")
     Long nLoadingPointId;
 
     /**
@@ -67,6 +69,7 @@ public class VSlot {
     /**
      * Идентификатор нефтебазы
      */
+    @Column(name = "n_store_id")
     Long nStoreId;
 
     /**
@@ -81,6 +84,7 @@ public class VSlot {
     /**
      * Идентификатор клиента
      */
+    @Column(name = "n_client_id")
     Long nClientId;
 
     /**

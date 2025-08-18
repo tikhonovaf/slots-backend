@@ -83,6 +83,21 @@ paths:
                 type: string
                 format: binary
 
+  /slots/mails:
+    patch:
+      summary: Отправка писем со слотами пользователям
+      operationId: sendMailsToUsers
+      tags:
+        - SLOT
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/userIds"
+      responses:
+        200:
+          description: Пустой ответ
+
   /clients:
     get:
       summary: Выборка списка клиентов
@@ -398,17 +413,9 @@ components:
           type: string
           description: Статус
           example: B
-#    idDtos:
-#      type: array
-#      description: Список идентификаторов
-#      items:
-#        $ref: "#/components/schemas/idDto"
-#    idDto:
-#      type: object
-#      description: Идентификатор
-#      properties:
-#        id:
-#          type: integer
-#          format: int64
-#          description: Идентификатор
-#          example: 1
+    userIds:
+      description: Список идентификаторов пользователей
+      type: array
+      items:
+        type: integer
+        format: int64

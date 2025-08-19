@@ -1,3 +1,5 @@
+SET MODE Oracle;
+
 -- Список покупателей (из view)
 
 CREATE TABLE IF NOT EXISTS v_client
@@ -58,6 +60,9 @@ CREATE TABLE IF NOT EXISTS loading_point (
      JOIN v_store s on lp.n_store_id = s.n_store_id
 ;
 
+-- Создание sequence
+CREATE SEQUENCE slot_seq START WITH 100 INCREMENT BY 1;
+
 -- Список слотов (новая таблица)
 CREATE TABLE IF NOT EXISTS slot (
      n_slot_id bigint NOT NULL,
@@ -91,3 +96,12 @@ CREATE TABLE IF NOT EXISTS slot (
      JOIN v_loading_point lp on lp.n_loading_point_id = slot.n_loading_point_id
      JOIN v_client c on c.n_client_id = slot.n_client_id
  ;
+
+-- Список шаблонов слотов (новая таблица)
+CREATE TABLE IF NOT EXISTS slot_template (
+                                    n_slot_template_id bigint NOT NULL,
+                                    n_loading_point_id bigint NOT NULL,
+                                    d_start_time time,
+                                    d_end_time time,
+    CONSTRAINT slot_template_pkey PRIMARY KEY (n_slot_template_id)
+    );

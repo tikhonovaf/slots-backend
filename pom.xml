@@ -152,7 +152,7 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <scope>runtime</scope>
+<!--            <scope>runtime</scope>-->
         </dependency>
 
         <!-- Драйвер Oracle (опционально, если будете переключаться на реальный Oracle) -->

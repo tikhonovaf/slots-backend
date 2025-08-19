@@ -9,6 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import ru.ttk.slotsbe.backend.dto.*;
 import ru.ttk.slotsbe.backend.mapper.SlotMapper;
 import ru.ttk.slotsbe.backend.model.*;
@@ -42,6 +43,10 @@ public class SlotApiService implements SlotsApiDelegate {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private ExcelUploadService excelUploadService;
+
 
     /**
      * Список слотов
@@ -153,4 +158,13 @@ public class SlotApiService implements SlotsApiDelegate {
 
     }
 
+    /**
+     * POST /slots/template/upload : Загрузка файла c шаблоном расписания
+     *
+     * @param file Файл для загрузки (optional)
+     * @return Пустой ответ (status code 200)
+     */
+    public ResponseEntity<List<String>> slotsTemplateUpload(MultipartFile file) {//    @Override
+        List<String> messages = excelUploadService.saveSlotTemplatesFromExcel(file);
+        return ResponseEntity.ok(messages);    }
 }

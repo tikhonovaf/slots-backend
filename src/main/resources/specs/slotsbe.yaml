@@ -3,7 +3,7 @@ info:
   title: "slotsbe backend"
   version: "1.01"
 servers:
-  - url: http://localhost:8085/api
+  - url: http://localhost:8081/api
 paths:
   /login:
     post:
@@ -97,6 +97,30 @@ paths:
       responses:
         200:
           description: Пустой ответ
+  /slots/template/upload:
+    post:
+      tags:
+        - SLOT
+      operationId: slotsTemplateUpload
+      summary: Загрузка файла c шаблоном расписания
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Файл для загрузки
+      responses:
+        200:
+          description: Список сообщений о загрузке
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/uploadMessages"
 
   /clients:
     get:
@@ -419,3 +443,9 @@ components:
       items:
         type: integer
         format: int64
+    uploadMessages:
+      description: Список сообщений о загрузке
+      type: array
+      items:
+        type: string
+        description: сообщение о загрузке

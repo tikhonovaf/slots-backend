@@ -13,4 +13,10 @@ public interface VLoadingPointRepository extends JpaRepository<VLoadingPoint, Lo
             "WHERE vc_store_code = :storeCode  AND vc_code = :loadingPointCode "
             , nativeQuery = true)
     List<VLoadingPoint> findAllByStoreCodeAndLoadingPointCode(String  storeCode, String loadingPointCode);
+
+    @Query(value = "SELECT * FROM v_loading_point\n" +
+            "WHERE n_store_id = :nStoreId "
+            , nativeQuery = true)
+    List<VLoadingPoint> findAllByStoreId(Long  nStoreId);
+
 }

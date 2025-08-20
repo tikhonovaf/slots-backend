@@ -56,7 +56,7 @@ public class ExcelUploadService {
                 List<VLoadingPoint> vLoadingPoints =
                         vLoadingPointRepository.findAllByStoreCodeAndLoadingPointCode(storeCode, loadingPointCode);
                 if (vLoadingPoints.size() > 0) {
-                    template.setNLoadingPointId(vLoadingPoints.get(0).getN_loading_point_id());
+                    template.setNLoadingPointId(vLoadingPoints.get(0).getNLoadingPointId());
 
                     //  Удаляем все записи в шаблоне для данной нефтебазы
                     if (!vLoadingPoints.get(0).getNStoreId().equals(storeId)) {

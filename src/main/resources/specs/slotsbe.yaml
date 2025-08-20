@@ -166,19 +166,27 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/storeDtos"
-#  /loadingPoints:
-#    get:
-#      summary: Выборка списка пунктов налива
-#      operationId: getLoadingPoints
-#      tags:
-#        - REF
-#      responses:
-#        200:
-#          description: Список пунктов налива
-#          content:
-#            application/json:
-#              schema:
-#                $ref: "#/components/schemas/loadingPointDtos"
+  /loadingPoints/{storeId}:
+    get:
+      summary: Выборка списка пунктов налива для заданной нефтебазы
+      operationId: getLoadingPoints
+      tags:
+        - REF
+      parameters:
+        - name: storeId
+          description: ИД нефтебазы
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: Список пунктов налива
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/loadingPointDtos"
 
 components:
   schemas:

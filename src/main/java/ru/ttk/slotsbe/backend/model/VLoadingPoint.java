@@ -19,7 +19,8 @@ public class VLoadingPoint {
      * Идентификатор
      */
     @Id
-    Long n_loading_point_id;
+    @Column(name = "n_loading_point_id")
+    Long nLoadingPointId;
 
     /**
      * Код

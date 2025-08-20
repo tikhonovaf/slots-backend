@@ -68,10 +68,10 @@ CREATE TABLE IF NOT EXISTS slot (
      n_slot_id bigint NOT NULL,
      d_date date,
      n_loading_point_id bigint NOT NULL,
-     n_client_id bigint NOT NULL,
+     n_client_id bigint ,
      d_start_time time,
      d_end_time time,
-     vc_status varchar(1),
+     vc_status varchar(1) NOT NULL,
     CONSTRAINT slot_pkey PRIMARY KEY (n_slot_id)
     );
 
@@ -94,7 +94,7 @@ CREATE TABLE IF NOT EXISTS slot (
      c.vc_name as vc_client_name
  FROM slot
      JOIN v_loading_point lp on lp.n_loading_point_id = slot.n_loading_point_id
-     JOIN v_client c on c.n_client_id = slot.n_client_id
+     LEFT JOIN v_client c on c.n_client_id = slot.n_client_id
  ;
 
 -- Список шаблонов слотов (новая таблица)

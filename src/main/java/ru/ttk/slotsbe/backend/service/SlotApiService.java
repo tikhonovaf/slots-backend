@@ -17,6 +17,8 @@ import ru.ttk.slotsbe.backend.repository.*;
 import ru.ttk.slotsbe.backend.api.*;
 import ru.ttk.slotsbe.backend.util.ExcelReportGenerator;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,6 +33,12 @@ public class SlotApiService implements SlotsApiDelegate {
 
     @Autowired
     private VSlotRepository vSlotRepository;
+
+    @Autowired
+    private VStoreRepository vStoreRepository;
+
+    @Autowired
+    private SlotTemplateRepository slotTemplateRepository;
 
     @Autowired
     private SlotRepository slotRepository;
@@ -119,7 +127,7 @@ public class SlotApiService implements SlotsApiDelegate {
     /**
      * PATCH /slots/mails : Отправка писем со слотами пользователям
      *
-     * @param ids  (optional)
+     * @param ids (optional)
      * @return Пустой ответ (status code 200)
      */
     public ResponseEntity<Void> sendMailsToUsers(List<Long> ids) {
@@ -166,5 +174,54 @@ public class SlotApiService implements SlotsApiDelegate {
      */
     public ResponseEntity<List<String>> slotsTemplateUpload(MultipartFile file) {//    @Override
         List<String> messages = excelUploadService.saveSlotTemplatesFromExcel(file);
-        return ResponseEntity.ok(messages);    }
+        return ResponseEntity.ok(messages);
+    }
+
+    /**
+     * POST /slots/ : формирование слотов на основе шаблона
+     *
+     * @param slotGenerateParams (optional)
+     * @return Список сообщений о формировании слотов (status code 200)
+     */
+    public ResponseEntity<List<String>> generateSlots(SlotGenerateParams slotGenerateParams) {
+        List<String> messages = new ArrayList<>();
+        List<Slot> slots = new ArrayList<>();
+        // Цикл по нефтебазам
+        for (Long storeId : slotGenerateParams.getnStoreIds()) {
+            if (vStoreRepository.findById(storeId).isPresent()) {  //  если по id найдена нефтебаза
+                String storeCode = vStoreRepository.findById(storeId).get().getVcCode();
+                // Выбираем строки шаблона по данной нефтебазе
+                List<SlotTemplate> templates = slotTemplateRepository.findAllByStoreId(storeId);
+                // Цикл по дням
+                // Задание начальной и конечной даты
+                LocalDate dateBegin = slotGenerateParams.getdDateBegin();
+                LocalDate dateEnd = slotGenerateParams.getdDateEnd();
+                // Цикл по дням
+                for (LocalDate genDate = dateBegin; !genDate.isAfter(dateEnd); genDate = genDate.plusDays(1)) {
+                    // Если на данную дату для данной нефтебазы нет резервированых слотов, то генерим
+                    if (slotRepository.findAllByStoreIdAndDate(storeId, genDate).isEmpty()) {
+                        //  Удаляем слоты на данную дату для данной нефтебазы
+                        slotRepository.deleteAllByStoreIdAndDate(storeId, genDate);
+                        // генерим слоты на основе шаблона
+                        for (SlotTemplate template : templates) {
+                            Slot slot = new Slot();
+                            slot.setNLoadingPointId(template.getNLoadingPointId());
+                            slot.setDDate(genDate);
+                            slot.setDStartTime(template.getDStartTime());
+                            slot.setDEndTime(template.getDEndTime());
+                            slot.setVcStatus("F");
+                            slots.add(slot);
+                        }
+                        messages.add("Для нефтебазы: " + storeCode + " на дату: " + genDate + " слоты добавлены");
+                    } else {
+                        messages.add("Для нефтебазы: " + storeCode + " на дату: " + genDate + " есть резервированные слоты. " +
+                                " Слоты не добавлены");
+                    }
+                }
+            }
+        }
+        slotRepository.saveAll(slots);
+        return ResponseEntity.ok(messages);
+    }
+
 }

@@ -452,7 +452,12 @@ components:
           items:
             type: integer
             format: int64
-        dDate:
+        dDateBegin:
+          type: string
+          format: date
+          description: Дата слота
+          example: 2025-07-12
+        dDateEnd:
           type: string
           format: date
           description: Дата слота

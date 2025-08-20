@@ -65,7 +65,7 @@ public class SlotApiService implements SlotsApiDelegate {
         List<SlotDto> result =
                 vSlotRepository
                         .findAllByFilter(slotSearchFilter.getnStoreIds(), slotSearchFilter.getnClientIds(),
-                                slotSearchFilter.getVcStatus(), slotSearchFilter.getdDate())
+                                slotSearchFilter.getVcStatus(), slotSearchFilter.getdDateBegin(), slotSearchFilter.getdDateEnd())
                         .stream()
                         .map(v -> slotMapper.fromViewToDto(v))
                         .collect(Collectors.toList());
@@ -103,7 +103,7 @@ public class SlotApiService implements SlotsApiDelegate {
         //  Формирование выборки из View по заданным фильтрам
         List<VSlot> slots = vSlotRepository
                 .findAllByFilter(slotSearchFilter.getnStoreIds(), slotSearchFilter.getnClientIds(),
-                        slotSearchFilter.getVcStatus(), slotSearchFilter.getdDate());
+                        slotSearchFilter.getVcStatus(), slotSearchFilter.getdDateBegin(), slotSearchFilter.getdDateEnd());
 
         // Генерируем Excel в памяти
         byte[] excelBytes = null;

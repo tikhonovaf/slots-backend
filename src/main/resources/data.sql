@@ -1,25 +1,21 @@
 INSERT INTO v_client( n_client_id, vc_code, vc_name)
 VALUES
-    (1, 'orgCode1', 'orgName1' ),
-    (2, 'orgCode2', 'orgName2'),
-    (3, 'orgCode3', 'orgName3'),
-    (4, 'orgCode4', 'orgName4'),
-    (5, 'orgCode5', 'orgName5'),
-    (6, 'orgCode6', 'orgName6'),
-    (7, 'orgCode7', 'orgName7'),
-    (8, 'orgCode8', 'orgName8')
+    (1, 'ООО ПСМК', 'ООО ПСМК' ),
+    (2, 'Каскад-Инфра ООО', 'Каскад-Инфра ООО'),
+    (3, 'НИПИГОРМАШ НАО', 'НИПИГОРМАШ НАО'),
+    (4, 'Арктур', 'Арктур'),
+    (5, 'ООО Затундра', 'ООО Затундра'),
+    (6, 'ООО ЗСК', 'ООО ЗСК'),
+    (7, 'ООО ПСК', 'ООО ПСК'),
+    (8, 'Синтез-01', 'Синтез-0')
 ;
 
 INSERT INTO v_store( n_store_id, vc_code, vc_name)
 VALUES
-    (1, 'storeCode1', 'storeName1' ),
-    (2, 'storeCode2', 'storeName2'),
-    (3, 'storeCode3', 'storeName3'),
-    (4, 'storeCode4', 'storeName4'),
-    (5, 'storeCode5', 'storeName5'),
-    (6, 'storeCode6', 'storeName6'),
-    (7, 'storeCode7', 'storeName7'),
-    (8, 'storeCode8', 'storeName8')
+    (1, '215', 'АО ТТК склад 215' ),
+    (2, '243', 'АО ТТК склад 243'),
+    (3, '263', 'АО ТТК склад 263'),
+    (4, '265', 'АО ТТК склад 265')
 ;
 
 INSERT INTO client_user(n_user_id, vc_first_name, vc_last_name, n_client_id, vc_login, vc_password, vc_email)
@@ -30,14 +26,14 @@ VALUES (1, 'ADMIN', 'ADMIN', 1,
 
 INSERT INTO loading_point( n_loading_point_id, n_store_id, vc_code, vc_name, vc_comment)
 VALUES
-    (1, 1, 'loading_point_Code1', 'loading_point_Name1' , 'loading_point_Comment_1' ),
-    (2, 1, 'loading_point_Code2', 'loading_point_Name2' , 'loading_point_Comment_2' ),
-    (3, 1, 'loading_point_Code3', 'loading_point_Name3' , 'loading_point_Comment_3' ),
-    (4, 2, 'loading_point_Code1', 'loading_point_Name1' , 'loading_point_Comment_1' ),
-    (5, 2, 'loading_point_Code2', 'loading_point_Name3' , 'loading_point_Comment_2' ),
-    (6, 3, 'loading_point_Code1', 'loading_point_Name1' , 'loading_point_Comment_1' ),
-    (7, 3, 'loading_point_Code2', 'loading_point_Name3' , 'loading_point_Comment_2' ),
-    (8, 3, 'loading_point_Code1', 'loading_point_Name1' , 'loading_point_Comment_1' )
+    (1, 1, 'пн-1', 'пункт налива-1' , 'бензин, дизтопливо, тс' ),
+    (2, 1, 'пн-2', 'пункт налива-2' , 'бензин, дизтопливо, тс' ),
+    (3, 1, 'пн-3', 'пункт налива-3' , 'бензин, дизтопливо' ),
+    (4, 2, 'пн-1', 'пункт налива-1' , 'бензин, дизтопливо' ),
+    (5, 2, 'пн-2', 'пункт налива-2' , 'бензин, дизтопливо' ),
+    (6, 3, 'пн-1', 'пункт налива-1' , 'бензин, дизтопливо, тс' ),
+    (7, 3, 'пн-2', 'пункт налива-2' , 'бензин, дизтопливо' ),
+    (8, 3, 'пн-3', 'пункт налива-3' , 'бензин, дизтопливо, тс' )
 ;
 
 

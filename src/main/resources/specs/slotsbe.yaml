@@ -166,20 +166,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/storeDtos"
-
-  /loadingPoints:
-    get:
-      summary: Выборка списка пунктов налива
-      operationId: getLoadingPoints
-      tags:
-        - REF
-      responses:
-        200:
-          description: Список пунктов налива
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/loadingPointDtos"
+#  /loadingPoints:
+#    get:
+#      summary: Выборка списка пунктов налива
+#      operationId: getLoadingPoints
+#      tags:
+#        - REF
+#      responses:
+#        200:
+#          description: Список пунктов налива
+#          content:
+#            application/json:
+#              schema:
+#                $ref: "#/components/schemas/loadingPointDtos"
 
 components:
   schemas:
@@ -315,8 +314,8 @@ components:
           example: Наименование 1
         vcStatus:
           type: string
-          description: Статус (F - free, B - busy)
-          example: B
+          description: Статус (F - free, R - reserved)
+          example: R
 
     modifiedSlotDtos:
       type: array
@@ -339,8 +338,8 @@ components:
           example: 1
         vcStatus:
           type: string
-          description: Статус (F - free, B - busy)
-          example: B
+          description: Статус (F - free, R - reserved)
+          example: R
     clientDtos:
       type: array
       description: Список клиентов
@@ -453,7 +452,7 @@ components:
         vcStatus:
           type: string
           description: Статус
-          example: B
+          example: R
     slotGenerateParams:
       description: Параметры для генерации слотов
       type: object

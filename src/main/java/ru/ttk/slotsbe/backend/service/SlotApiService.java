@@ -130,8 +130,8 @@ public class SlotApiService implements SlotsApiDelegate {
      * @param ids (optional)
      * @return Пустой ответ (status code 200)
      */
-    public ResponseEntity<Void> sendMailsToUsers(List<Long> ids) {
-
+    public ResponseEntity<List<String>> sendMailsToUsers(List<Long> ids) {
+        List<String> messages = new ArrayList<>();
         // Выбираем список пользователей
         List<ClientUser> users = clientUserRepository.findAllByNUserIds(ids);
 
@@ -149,21 +149,20 @@ public class SlotApiService implements SlotsApiDelegate {
 
             // 3. Отправляем email с вложением
             try {
-                emailService.sendEmailWithExcelAttachment(
+                String result = emailService.sendEmailWithExcelAttachment(
                         emailTo,
                         "Customer Report",
                         "Please find attached the customer report.",
                         excelBytes,
                         "customers_report.xlsx"
                 );
+                messages.add(result);
             } catch (MessagingException e) {
                 throw new RuntimeException(e);
             }
 
         }
-
-        return ResponseEntity.noContent().build();
-
+        return ResponseEntity.ok(messages);
     }
 
     /**

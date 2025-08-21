@@ -113,7 +113,11 @@ paths:
               $ref: "#/components/schemas/userIds"
       responses:
         200:
-          description: Пустой ответ
+          description: Список сообщений об отправке email
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/uploadMessages"
   /slots/template/upload:
     post:
       tags:

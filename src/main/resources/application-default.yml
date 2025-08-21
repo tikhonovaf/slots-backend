@@ -19,6 +19,10 @@ server:
   servlet:
     session:
       timeout: 64800m
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
   session:
     timeout: 3888000
 spring:

@@ -17,7 +17,7 @@ public interface SlotTemplateRepository extends JpaRepository<SlotTemplate, Long
             " SELECT n_loading_point_id FROM loading_point " +
             " WHERE n_store_id = :nStoreId )"
             , nativeQuery = true)
-    void deleteAllByStoreId(Long storeId);
+    void deleteAllByStoreId(Long nStoreId);
 
     @Query(value = "SELECT * FROM slot_template\n  " +
             " WHERE n_loading_point_id IN (" +

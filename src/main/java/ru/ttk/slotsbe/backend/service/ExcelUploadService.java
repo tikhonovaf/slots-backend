@@ -45,11 +45,28 @@ public class ExcelUploadService {
                 SlotTemplate template = new SlotTemplate();
 
                 // Определение пункта налива
-                String storeCode = row.getCell(0).getStringCellValue().trim();
+                Cell cellStoreCode = row.getCell(0);
+                String storeCode;
+                if (cellStoreCode.getCellType() == CellType.NUMERIC) {
+                    // Если ячейка содержит число, преобразуем в строку
+                    storeCode = String.valueOf((int) cellStoreCode.getNumericCellValue());
+                } else {
+                    // Если ячейка уже содержит текст
+                    storeCode = cellStoreCode.getStringCellValue();
+                }
                 if (storeCode.isEmpty()) {
                     result.add("Строка " + (row.getRowNum() + 1) + ": не задан код нефтебазы.");
                 }
-                String loadingPointCode = row.getCell(1).getStringCellValue().trim();
+
+                Cell cellLoadingPointCode = row.getCell(1);
+                String loadingPointCode;
+                if (cellLoadingPointCode.getCellType() == CellType.NUMERIC) {
+                    // Если ячейка содержит число, преобразуем в строку
+                    loadingPointCode = String.valueOf((int) cellLoadingPointCode.getNumericCellValue());
+                } else {
+                    // Если ячейка уже содержит текст
+                    loadingPointCode = cellLoadingPointCode.getStringCellValue();
+                }
                 if (loadingPointCode.isEmpty()) {
                     result.add("Строка " + (row.getRowNum() + 1) + ": не задан код пункта налива.");
                 }

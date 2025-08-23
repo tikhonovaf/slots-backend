@@ -1,45 +1,55 @@
-package ru.ttk.slotsbe.backend.service;//package ru.ttk.slotsbe.backend.service;
+package ru.ttk.slotsbe.backend.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import ru.ttk.slotsbe.backend.api.LoadingPointsApiDelegate;
+import ru.ttk.slotsbe.backend.dto.LoadingPointDto;
 import ru.ttk.slotsbe.backend.mapper.LoadingPointMapper;
 import ru.ttk.slotsbe.backend.repository.VLoadingPointRepository;
-import ru.ttk.slotsbe.backend.api.*;
-import ru.ttk.slotsbe.backend.dto.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Класс для выполнения функций rest сервисов (GET, POST, PATCH, DELETE)
+ * Сервис для обработки REST-запросов, связанных с пунктами налива.
  *
  * @author Аркадий Тихонов
  */
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class LoadingPointApiService implements LoadingPointsApiDelegate {
 
-    @Autowired
-    private VLoadingPointRepository vLoadingPointRepository;
-
-    @Autowired
-    private LoadingPointMapper loadingPointMapper;
+    private final VLoadingPointRepository vLoadingPointRepository;
+    private final LoadingPointMapper loadingPointMapper;
 
     /**
-     * Список пунктов налива
+     * Получает список пунктов налива по ID склада.
+     *
+     * @param storeId ID склада
+     * @return Список DTO пунктов налива или соответствующий HTTP статус
      */
     @Override
     public ResponseEntity<List<LoadingPointDto>> getLoadingPoints(Long storeId) {
-        List<LoadingPointDto>  result =
-                vLoadingPointRepository
-                            .findAllByStoreId(storeId)
-                            .stream()
-                            .map(v -> loadingPointMapper.fromViewToDto(v))
-                            .collect(Collectors.toList());
+        if (storeId == null) {
+            log.warn("Получен запрос с пустым storeId");
+            return ResponseEntity.badRequest().build();
+        }
 
+        List<LoadingPointDto> result = vLoadingPointRepository
+                .findAllByStoreId(storeId)
+                .stream()
+                .map(loadingPointMapper::fromViewToDto)
+                .collect(Collectors.toList());
+
+        if (result.isEmpty()) {
+            log.info("Пункты налива не найдены для storeId {}", storeId);
+            return ResponseEntity.noContent().build();
+        }
+
+        log.info("Найдено {} пунктов налива для storeId {}", result.size(), storeId);
         return ResponseEntity.ok(result);
     }
-
 }

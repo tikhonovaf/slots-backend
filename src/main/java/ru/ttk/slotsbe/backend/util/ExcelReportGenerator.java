@@ -1,78 +1,75 @@
 package ru.ttk.slotsbe.backend.util;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import ru.ttk.slotsbe.backend.model.VSlot;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.List;
 
+@Slf4j
 public class ExcelReportGenerator {
 
-    public static byte[] generateExcel(List<VSlot> slots) throws Exception {
+    private static final String[] HEADERS = {
+            "Дата слота", "Время начала", "Время окончания", "Статус",
+            "Нефтебаза", "Пункт налива", "Клиент"
+    };
+
+    public static byte[] generateExcel(List<VSlot> slots) {
+        log.info("Начало генерации Excel-отчета. Количество слотов: {}", slots.size());
+
         try (Workbook workbook = new XSSFWorkbook();
              ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
-            Sheet sheet = workbook.createSheet("slots");
+            Sheet sheet = workbook.createSheet("Слоты");
 
-            // Стиль для заголовков
             CellStyle headerStyle = createHeaderStyle(workbook);
+            CellStyle timeStyle = createTimeStyle(workbook);
+            CellStyle dateStyle = createDateStyle(workbook);
 
             // Заголовки
             Row headerRow = sheet.createRow(0);
-            String[] headers = {"Дата слота", "Время начала", "Время окончания", "Статус",
-               "Нефтебаза", "Пункт налива", "Клиент" };
-
-            for (int i = 0; i < headers.length; i++) {
-                Cell cell = headerRow.createCell(i);
-                cell.setCellValue(headers[i]);
-                cell.setCellStyle(headerStyle);
+            for (int i = 0; i < HEADERS.length; i++) {
+                createCell(headerRow, i, HEADERS[i], headerStyle);
             }
 
             // Данные
             int rowNum = 1;
-            // Создаем стиль для ячейки с форматом времени
-            CellStyle timeStyle = workbook.createCellStyle();
-            CreationHelper createHelper = workbook.getCreationHelper();
-            timeStyle.setDataFormat(createHelper.createDataFormat().getFormat("HH:mm"));
-
-            CellStyle dateStyle = workbook.createCellStyle();
-            dateStyle.setDataFormat(createHelper.createDataFormat().getFormat("DD.MM,YYYY"));
-
             for (VSlot slot : slots) {
                 Row row = sheet.createRow(rowNum++);
-
-                Cell cell0 = row.createCell(0);
-                cell0.setCellValue(slot.getDDate());
-                cell0.setCellStyle(dateStyle);
-
-                Cell cell1 = row.createCell(1);
-                // Преобразуем LocalTime в java.util.Date (через java.sql.Time)
-                java.sql.Time sqlTime1 = java.sql.Time.valueOf(slot.getDStartTime());
-                // Устанавливаем значение и стиль
-                cell1.setCellValue(sqlTime1);
-                cell1.setCellStyle(timeStyle);
-
-                Cell cell2 = row.createCell(2);
-                // Преобразуем LocalTime в java.util.Date (через java.sql.Time)
-                java.sql.Time sqlTime2 = java.sql.Time.valueOf(slot.getDEndTime());
-                // Устанавливаем значение и стиль
-                cell2.setCellValue(sqlTime2);
-                cell2.setCellStyle(timeStyle);
-
-                row.createCell(3).setCellValue(slot.getVcStatusName());
-                row.createCell(4).setCellValue(slot.getVcStoreName());
-                row.createCell(5).setCellValue(slot.getVcLoadingPointName());
-                row.createCell(6).setCellValue(slot.getVcClientName());
+                createCell(row, 0, java.sql.Date.valueOf(slot.getDDate()), dateStyle);
+                createCell(row, 1, java.sql.Time.valueOf(slot.getDStartTime()), timeStyle);
+                createCell(row, 2, java.sql.Time.valueOf(slot.getDEndTime()), timeStyle);
+                createCell(row, 3, slot.getVcStatusName(), null);
+                createCell(row, 4, slot.getVcStoreName(), null);
+                createCell(row, 5, slot.getVcLoadingPointName(), null);
+                createCell(row, 6, slot.getVcClientName(), null);
             }
 
-            // Автоподбор ширины колонок
-            for (int i = 0; i < headers.length; i++) {
+            for (int i = 0; i < HEADERS.length; i++) {
                 sheet.autoSizeColumn(i);
             }
 
             workbook.write(out);
+            log.info("Excel-отчет успешно сгенерирован.");
             return out.toByteArray();
+        } catch (IOException e) {
+            log.error("Ошибка при генерации Excel-отчета", e);
+            throw new RuntimeException("Ошибка при генерации Excel-файла", e);
+        }
+    }
+
+    private static void createCell(Row row, int columnIndex, Object value, CellStyle style) {
+        Cell cell = row.createCell(columnIndex);
+        if (value instanceof String) {
+            cell.setCellValue((String) value);
+        } else if (value instanceof java.util.Date) {
+            cell.setCellValue((java.util.Date) value);
+        }
+        if (style != null) {
+            cell.setCellStyle(style);
         }
     }
 
@@ -85,6 +82,20 @@ public class ExcelReportGenerator {
         style.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
         style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         style.setAlignment(HorizontalAlignment.CENTER);
+        return style;
+    }
+
+    private static CellStyle createTimeStyle(Workbook workbook) {
+        CellStyle style = workbook.createCellStyle();
+        style.setDataFormat(workbook.getCreationHelper()
+                .createDataFormat().getFormat("HH:mm"));
+        return style;
+    }
+
+    private static CellStyle createDateStyle(Workbook workbook) {
+        CellStyle style = workbook.createCellStyle();
+        style.setDataFormat(workbook.getCreationHelper()
+                .createDataFormat().getFormat("dd.MM.yyyy"));
         return style;
     }
 }

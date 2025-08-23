@@ -41,9 +41,20 @@ public class VSlot {
     LocalTime dEndTime;
 
     /**
-     * Статус
+     * Идентификатор статиса
      */
-    String vcStatus;
+    @Column(name = "n_status_Id")
+    Long nStatusId;
+
+    /**
+     * Код статуса  
+     */
+    String vcStatusCode;
+
+    /**
+     * Наименование статуса  
+     */
+    String vcStatusName;
 
     /**
      * Идентификатор пункта налива

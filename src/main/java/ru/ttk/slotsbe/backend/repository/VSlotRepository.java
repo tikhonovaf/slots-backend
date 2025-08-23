@@ -13,13 +13,13 @@ public interface VSlotRepository extends JpaRepository<VSlot, Long> {
     @Query(value = "SELECT * FROM v_slot\n" +
             "WHERE (:nStoreIds IS NULL OR n_store_id IN (:nStoreIds) )\n" +
             " AND (:nClientIds IS NULL OR n_client_id IN (:nClientIds))\n" +
-            " AND (:vcStatus IS NULL OR vc_status = :vcStatus)\n" +
+            " AND (:nStatusId IS NULL OR n_status_id = :nStatusId)\n" +
             " AND (:dDateBegin IS NULL OR d_date >= :dDateBegin)\n" +
             " AND (:dDateEnd IS NULL OR d_date <= :dDateEnd)\n" +
             "   ORDER BY n_store_id, d_date, d_start_time \n"
             , nativeQuery = true)
     List<VSlot> findAllByFilter(List <Long> nStoreIds, List <Long> nClientIds,
-                                String vcStatus, @Valid LocalDate dDateBegin, @Valid LocalDate dDateEnd);
+                                Long nStatusId, @Valid LocalDate dDateBegin, @Valid LocalDate dDateEnd);
 
     @Query(value = "SELECT * FROM v_slot\n" +
             "WHERE n_client_id = :nClientId" +

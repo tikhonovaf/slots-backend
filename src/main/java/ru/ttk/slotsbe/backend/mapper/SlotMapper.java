@@ -1,7 +1,7 @@
 package ru.ttk.slotsbe.backend.mapper;
 
 import org.springframework.stereotype.Service;
-import ru.ttk.slotsbe.backend.dto.SlotDto;
+import ru.ttk.slotsbe.backend.dto.*;
 import ru.ttk.slotsbe.backend.model.*;
 import ru.ttk.slotsbe.backend.util.CoreUtil;
 
@@ -24,5 +24,16 @@ public class SlotMapper {
         return result;
     }
 
+    /**
+     * Маппинг из SlotStatus в DTO
+     *
+     * @param entity - строка из SlotStatus
+     * @return Данные в структуре DTO
+     */
+    public SlotStatusDto fromEntityToDto(SlotStatus entity) {
+        SlotStatusDto result = new SlotStatusDto();
+        CoreUtil.patch(entity, result);
+        return result;
+    }
 
 }

@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import ru.ttk.slotsbe.backend.api.StoresApiDelegate;
-import ru.ttk.slotsbe.backend.api.StoresApiDelegate;
 import ru.ttk.slotsbe.backend.dto.StoreDto;
 import ru.ttk.slotsbe.backend.mapper.StoreMapper;
 import ru.ttk.slotsbe.backend.repository.VStoreRepository;

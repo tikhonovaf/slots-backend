@@ -52,8 +52,9 @@ public class Slot {
     LocalTime dEndTime;
 
     /**
-     * Статус
+     * Идентификатор статиса
      */
-    String vcStatus;
+    @Column(name = "n_status_Id")
+    Long nStatusId;
 
 }

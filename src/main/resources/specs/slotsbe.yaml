@@ -30,6 +30,19 @@ paths:
         200:
           description: Пустой ответ
 
+  /slots/statuses:
+    post:
+      summary: Выборка списка статусов слотов
+      operationId: getSlotStatuses
+      tags:
+        - SLOT
+      responses:
+        200:
+          description: Список статусов слотов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/slotStatusDtos"
   /slots/search:
     post:
       summary: Выборка списка слотов с фильтром
@@ -324,10 +337,19 @@ components:
           type: string
           description: Наименование клиента
           example: Наименование 1
-        vcStatus:
+        nStatusId:
+          type: integer
+          format: int64
+          description: Идентификатор статуса слота
+          example: 1
+        vcStatusCode:
           type: string
-          description: Статус (F - free, R - reserved)
-          example: R
+          description: Код статуса слота
+          example: Код 1
+        vcStatusName:
+          type: string
+          description: Наименование статуса слота
+          example: Наименование 1
 
     modifiedSlotDtos:
       type: array
@@ -348,10 +370,11 @@ components:
           format: int64
           description: Идентификатор клиента
           example: 1
-        vcStatus:
-          type: string
-          description: Статус (F - free, R - reserved)
-          example: R
+        nStatusId:
+          type: integer
+          format: int64
+          description: Идентификатор статуса
+          example: 1
     clientDtos:
       type: array
       description: Список клиентов
@@ -466,10 +489,11 @@ components:
           format: date
           description: Дата слота
           example: 2025-07-12
-        vcStatus:
-          type: string
-          description: Статус
-          example: R
+        nStatusId:
+          type: integer
+          format: int64
+          description: Идентификатор статуса слота
+          example: 1
     slotGenerateParams:
       description: Параметры для генерации слотов
       type: object
@@ -502,3 +526,27 @@ components:
       items:
         type: string
         description: сообщение о загрузке
+    
+    slotStatusDtos:
+      type: array
+      description: Список статусов слотов
+      items:
+        $ref: "#/components/schemas/slotStatusDto"
+    slotStatusDto:
+      type: object
+      description: Статус слота
+      properties:
+        nStatusId:
+          type: integer
+          format: int64
+          description: Идентификатор
+          example: 1
+        vcCode:
+          type: string
+          description: код
+          example: Код 1
+        vcName:
+          type: string
+          description: Наименование
+          example: Наименование 1
+  

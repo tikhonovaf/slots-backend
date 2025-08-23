@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.ttk.slotsbe.backend.model.SlotTemplate;
 import ru.ttk.slotsbe.backend.model.VLoadingPoint;
+import ru.ttk.slotsbe.backend.repository.SlotStatusRepository;
 import ru.ttk.slotsbe.backend.repository.SlotTemplateRepository;
 import ru.ttk.slotsbe.backend.repository.VLoadingPointRepository;
 
@@ -22,13 +23,9 @@ import java.util.List;
 @RequiredArgsConstructor
 
 public class ExcelUploadService {
-    @Autowired
-    private SlotTemplateRepository slotTemplateRepository;
-    @Autowired
-    private VLoadingPointRepository vLoadingPointRepository;
-
-//    @Autowired
-//    SlotTemplateService slotTemplateService;
+    private final SlotTemplateRepository slotTemplateRepository;
+    private  final VLoadingPointRepository vLoadingPointRepository;
+    private final SlotStatusRepository slotStatusRepository;
 
     public List<String> saveSlotTemplatesFromExcel(MultipartFile file) {
         List<String> result = new ArrayList<>();
@@ -99,8 +96,8 @@ public class ExcelUploadService {
                 }
                 //  Время окончания слота
                 Cell cellEndTime = row.getCell(3);
-                if (DateUtil.isCellDateFormatted(cellStartTime)) {
-                    Date date = cellStartTime.getDateCellValue(); // получаем java.util.Date
+                if (DateUtil.isCellDateFormatted(cellEndTime)) {
+                    Date date = cellEndTime.getDateCellValue(); // получаем java.util.Date
                     LocalTime endTime = date.toInstant()
                             .atZone(ZoneId.systemDefault())
                             .toLocalTime();
@@ -108,6 +105,20 @@ public class ExcelUploadService {
                 } else {
                     result.add("Строка " + (row.getRowNum() + 1) + ": Время окончания слота - неверный формат.");
                 }
+
+                // Определение статуса слота
+                Cell cellStatusCode = row.getCell(4);
+                Long statusId = 1L;
+                if (cellStatusCode != null ) {
+                    String statusCode = row.getCell(4).getStringCellValue();
+                    if (slotStatusRepository.findByVcCode(statusCode).isPresent()) {
+                        statusId = slotStatusRepository.findByVcCode(statusCode).get().getNStatusId();
+                    } else {
+                        result.add("Строка " + (row.getRowNum() + 1) + ": некорректный код статуса слота.");
+                    }
+                }
+                template.setNStatusId(statusId);
+
 
                 templates.add(template);
             }

@@ -40,4 +40,10 @@ public class SlotTemplate {
      */
     LocalTime dEndTime;
 
+    /**
+     * Идентификатор статиса
+     */
+    @Column(name = "n_status_Id")
+    Long nStatusId;
+
 }

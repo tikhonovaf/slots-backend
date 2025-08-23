@@ -60,7 +60,7 @@ public class ExcelMailGenerator {
                 cell2.setCellValue(sqlTime2);
                 cell2.setCellStyle(timeStyle);
 
-                row.createCell(3).setCellValue(slot.getVcStatus());
+                row.createCell(3).setCellValue(slot.getVcStatusName());
                 row.createCell(4).setCellValue(slot.getVcStoreName());
                 row.createCell(5).setCellValue(slot.getVcLoadingPointName());
                 row.createCell(6).setCellValue(slot.getVcClientName());

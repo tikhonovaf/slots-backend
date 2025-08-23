@@ -55,6 +55,8 @@ public class SlotApiService implements SlotsApiDelegate {
     @Autowired
     private ExcelUploadService excelUploadService;
 
+    @Autowired
+    private SlotStatusRepository slotStatusRepository;
 
     /**
      * Список слотов
@@ -65,7 +67,7 @@ public class SlotApiService implements SlotsApiDelegate {
         List<SlotDto> result =
                 vSlotRepository
                         .findAllByFilter(slotSearchFilter.getnStoreIds(), slotSearchFilter.getnClientIds(),
-                                slotSearchFilter.getVcStatus(), slotSearchFilter.getdDateBegin(), slotSearchFilter.getdDateEnd())
+                                slotSearchFilter.getnStatusId(), slotSearchFilter.getdDateBegin(), slotSearchFilter.getdDateEnd())
                         .stream()
                         .map(v -> slotMapper.fromViewToDto(v))
                         .collect(Collectors.toList());
@@ -83,7 +85,7 @@ public class SlotApiService implements SlotsApiDelegate {
         for (ModifiedSlotDto slot : modifiedSlotDtos) {
             if (slotRepository.findById(slot.getnSlotId()).isPresent()) {
                 Slot modifiedSlot = slotRepository.findById(slot.getnSlotId()).get();
-                modifiedSlot.setVcStatus(slot.getVcStatus());
+                modifiedSlot.setNSlotId(slot.getnSlotId());
                 modifiedSlot.setNClientId(slot.getnClientId());
                 slotRepository.save(modifiedSlot);
             }
@@ -103,7 +105,7 @@ public class SlotApiService implements SlotsApiDelegate {
         //  Формирование выборки из View по заданным фильтрам
         List<VSlot> slots = vSlotRepository
                 .findAllByFilter(slotSearchFilter.getnStoreIds(), slotSearchFilter.getnClientIds(),
-                        slotSearchFilter.getVcStatus(), slotSearchFilter.getdDateBegin(), slotSearchFilter.getdDateEnd());
+                        slotSearchFilter.getnStatusId(), slotSearchFilter.getdDateBegin(), slotSearchFilter.getdDateEnd());
 
         // Генерируем Excel в памяти
         byte[] excelBytes = null;
@@ -208,7 +210,7 @@ public class SlotApiService implements SlotsApiDelegate {
                             slot.setDDate(genDate);
                             slot.setDStartTime(template.getDStartTime());
                             slot.setDEndTime(template.getDEndTime());
-                            slot.setVcStatus("F");
+                            slot.setNStatusId(template.getNStatusId());
                             slots.add(slot);
                         }
                         messages.add("Для нефтебазы: " + storeCode + " на дату: " + genDate + " слоты добавлены");
@@ -222,5 +224,23 @@ public class SlotApiService implements SlotsApiDelegate {
         slotRepository.saveAll(slots);
         return ResponseEntity.ok(messages);
     }
+
+    /**
+     * Список статусов
+     */
+    @Override
+    public ResponseEntity<List<SlotStatusDto>> getSlotStatuses() {
+//      Формирование списка статусов
+        List<SlotStatusDto> result =
+                slotStatusRepository
+                        .findAll()
+                        .stream()
+                        .map(v -> slotMapper.fromEntityToDto(v))
+                        .collect(Collectors.toList());
+
+        return ResponseEntity.ok(result);
+
+    }
+
 
 }

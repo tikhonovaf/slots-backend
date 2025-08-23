@@ -10,7 +10,6 @@ CREATE TABLE IF NOT EXISTS v_client
     )
 ;
 
-
 CREATE TABLE IF NOT EXISTS v_store
 (
     n_store_id bigint NOT NULL,
@@ -19,9 +18,18 @@ CREATE TABLE IF NOT EXISTS v_store
     )
 ;
 
+CREATE TABLE IF NOT EXISTS slot_status
+(
+    n_status_Id bigint NOT NULL,
+    vc_code varchar(100),
+    vc_name varchar(1000)
+    )
+;
+
+
+
 --  Список пользователей (новая таблица)
 --  Table: client_user
-
 CREATE TABLE IF NOT EXISTS client_user (
     n_user_id bigint NOT NULL,
     vc_first_name varchar(100),
@@ -71,7 +79,7 @@ CREATE TABLE IF NOT EXISTS slot (
      n_client_id bigint ,
      d_start_time time,
      d_end_time time,
-     vc_status varchar(1) NOT NULL,
+     n_status_Id bigint NOT NULL,
     CONSTRAINT slot_pkey PRIMARY KEY (n_slot_id)
     );
 
@@ -81,7 +89,6 @@ CREATE TABLE IF NOT EXISTS slot (
      slot.d_date,
      slot.d_start_time,
      slot.d_end_time,
-     slot.vc_status,
      slot.n_loading_point_id,
      lp.vc_code as vc_Loading_Point_Code,
      lp.vc_name as vc_Loading_Point_Name,
@@ -91,9 +98,13 @@ CREATE TABLE IF NOT EXISTS slot (
      lp.vc_store_name,
      slot.n_client_id,
      c.vc_code as vc_client_code,
-     c.vc_name as vc_client_name
+     c.vc_name as vc_client_name,
+     slot.n_status_Id,
+     ss.vc_code as vc_status_code,
+     ss.vc_name as vc_status_name
  FROM slot
      JOIN v_loading_point lp on lp.n_loading_point_id = slot.n_loading_point_id
+     JOIN slot_status ss on ss.n_status_Id = slot.n_status_Id
      LEFT JOIN v_client c on c.n_client_id = slot.n_client_id
  ;
 
@@ -103,5 +114,6 @@ CREATE TABLE IF NOT EXISTS slot_template (
                                     n_loading_point_id bigint NOT NULL,
                                     d_start_time time,
                                     d_end_time time,
+                                    n_status_Id bigint NOT NULL,
     CONSTRAINT slot_template_pkey PRIMARY KEY (n_slot_template_id)
     );

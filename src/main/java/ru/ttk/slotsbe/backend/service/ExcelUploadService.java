@@ -1,9 +1,9 @@
 package ru.ttk.slotsbe.backend.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.ttk.slotsbe.backend.model.SlotTemplate;
@@ -15,122 +15,126 @@ import ru.ttk.slotsbe.backend.repository.VLoadingPointRepository;
 import java.io.InputStream;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-
+@Slf4j
 public class ExcelUploadService {
+
     private final SlotTemplateRepository slotTemplateRepository;
-    private  final VLoadingPointRepository vLoadingPointRepository;
+    private final VLoadingPointRepository vLoadingPointRepository;
     private final SlotStatusRepository slotStatusRepository;
 
     public List<String> saveSlotTemplatesFromExcel(MultipartFile file) {
         List<String> result = new ArrayList<>();
-        Long storeId = 0L;
+        Set<Long> storeIdsToDelete = new HashSet<>();
+        List<SlotTemplate> templates = new ArrayList<>();
+
         try (InputStream is = file.getInputStream();
              Workbook workbook = new XSSFWorkbook(is)) {
 
             Sheet sheet = workbook.getSheetAt(0);
-            List<SlotTemplate> templates = new ArrayList<>();
 
             for (Row row : sheet) {
-                if (row.getRowNum() == 0) continue; // Пропустить заголовок
+                if (row.getRowNum() == 0 || isRowEmpty(row)) continue;
 
-                SlotTemplate template = new SlotTemplate();
-
-                // Определение пункта налива
-                Cell cellStoreCode = row.getCell(0);
-                String storeCode;
-                if (cellStoreCode.getCellType() == CellType.NUMERIC) {
-                    // Если ячейка содержит число, преобразуем в строку
-                    storeCode = String.valueOf((int) cellStoreCode.getNumericCellValue());
-                } else {
-                    // Если ячейка уже содержит текст
-                    storeCode = cellStoreCode.getStringCellValue();
-                }
-                if (storeCode.isEmpty()) {
-                    result.add("Строка " + (row.getRowNum() + 1) + ": не задан код нефтебазы.");
-                }
-
-                Cell cellLoadingPointCode = row.getCell(1);
-                String loadingPointCode;
-                if (cellLoadingPointCode.getCellType() == CellType.NUMERIC) {
-                    // Если ячейка содержит число, преобразуем в строку
-                    loadingPointCode = String.valueOf((int) cellLoadingPointCode.getNumericCellValue());
-                } else {
-                    // Если ячейка уже содержит текст
-                    loadingPointCode = cellLoadingPointCode.getStringCellValue();
-                }
-                if (loadingPointCode.isEmpty()) {
-                    result.add("Строка " + (row.getRowNum() + 1) + ": не задан код пункта налива.");
-                }
-                List<VLoadingPoint> vLoadingPoints =
-                        vLoadingPointRepository.findAllByStoreCodeAndLoadingPointCode(storeCode, loadingPointCode);
-                if (vLoadingPoints.size() > 0) {
-                    template.setNLoadingPointId(vLoadingPoints.get(0).getNLoadingPointId());
-
-                    //  Удаляем все записи в шаблоне для данной нефтебазы
-                    if (!vLoadingPoints.get(0).getNStoreId().equals(storeId)) {
-                        storeId = vLoadingPoints.get(0).getNStoreId();
-                        slotTemplateRepository.deleteAllByStoreId(storeId);
-                    }
-
-                } else {
-                    result.add("Строка " + (row.getRowNum() + 1) + ": не удалось найти запись в БД " +
-                            "для код нефтебазы = " + storeCode + ", код пункта налива = " + loadingPointCode);
-                }
-
-                //  Время начала слота
-                Cell cellStartTime = row.getCell(2);
-                if (DateUtil.isCellDateFormatted(cellStartTime)) {
-                    Date date = cellStartTime.getDateCellValue(); // получаем java.util.Date
-                    LocalTime startTime = date.toInstant()
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalTime();
-                    template.setDStartTime(startTime);
-                } else {
-                    result.add("Строка " + (row.getRowNum() + 1) + ": Время начала слота - неверный формат.");
-                }
-                //  Время окончания слота
-                Cell cellEndTime = row.getCell(3);
-                if (DateUtil.isCellDateFormatted(cellEndTime)) {
-                    Date date = cellEndTime.getDateCellValue(); // получаем java.util.Date
-                    LocalTime endTime = date.toInstant()
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalTime();
-                    template.setDEndTime(endTime);
-                } else {
-                    result.add("Строка " + (row.getRowNum() + 1) + ": Время окончания слота - неверный формат.");
-                }
-
-                // Определение статуса слота
-                Cell cellStatusCode = row.getCell(4);
-                Long statusId = 1L;
-                if (cellStatusCode != null ) {
-                    String statusCode = row.getCell(4).getStringCellValue();
-                    if (slotStatusRepository.findByVcCode(statusCode).isPresent()) {
-                        statusId = slotStatusRepository.findByVcCode(statusCode).get().getNStatusId();
-                    } else {
-                        result.add("Строка " + (row.getRowNum() + 1) + ": некорректный код статуса слота.");
-                    }
-                }
-                template.setNStatusId(statusId);
-
-
-                templates.add(template);
+                Optional<SlotTemplate> optionalTemplate = parseRow(row, result, storeIdsToDelete);
+                optionalTemplate.ifPresent(templates::add);
             }
 
-            if (result.size() == 0) {
-                result.add("Шаблон загружен успешно ");
+            if (result.isEmpty()) {
+                storeIdsToDelete.forEach(slotTemplateRepository::deleteAllByStoreId);
                 slotTemplateRepository.saveAll(templates);
+                result.add("Шаблон загружен успешно. Загружено " + templates.size() + " строк");
+                log.info("Загружено {} строк", templates.size());
+            } else {
+                log.warn("Ошибки при загрузке Excel: {}", result);
             }
 
         } catch (Exception e) {
+            log.error("Ошибка при обработке Excel-файла", e);
             throw new RuntimeException("Ошибка при обработке Excel-файла", e);
         }
+
         return result;
+    }
+
+    private Optional<SlotTemplate> parseRow(Row row, List<String> result, Set<Long> storeIdsToDelete) {
+        SlotTemplate template = new SlotTemplate();
+
+        String storeCode = getCellStringValue(row.getCell(0));
+        String loadingPointCode = getCellStringValue(row.getCell(1));
+
+        if (storeCode.isEmpty()) {
+            result.add("Строка " + (row.getRowNum() + 1) + ": не задан код нефтебазы.");
+            return Optional.empty();
+        }
+        if (loadingPointCode.isEmpty()) {
+            result.add("Строка " + (row.getRowNum() + 1) + ": не задан код пункта налива.");
+            return Optional.empty();
+        }
+
+        List<VLoadingPoint> vLoadingPoints =
+                vLoadingPointRepository.findAllByStoreCodeAndLoadingPointCode(storeCode, loadingPointCode);
+
+        if (vLoadingPoints.isEmpty()) {
+            result.add("Строка " + (row.getRowNum() + 1) + ": не найдена запись для код нефтебазы = " +
+                    storeCode + ", код пункта налива = " + loadingPointCode);
+            return Optional.empty();
+        }
+
+        VLoadingPoint point = vLoadingPoints.get(0);
+        template.setNLoadingPointId(point.getNLoadingPointId());
+        storeIdsToDelete.add(point.getNStoreId());
+
+        LocalTime startTime = getTimeFromCell(row.getCell(2), "Время начала слота", row.getRowNum(), result);
+        LocalTime endTime = getTimeFromCell(row.getCell(3), "Время окончания слота", row.getRowNum(), result);
+
+        if (startTime != null) template.setDStartTime(startTime);
+        if (endTime != null) template.setDEndTime(endTime);
+
+        Long statusId = getStatusId(row.getCell(4), row.getRowNum(), result);
+        template.setNStatusId(statusId);
+
+        return Optional.of(template);
+    }
+
+    private String getCellStringValue(Cell cell) {
+        if (cell == null) return "";
+        return switch (cell.getCellType()) {
+            case STRING -> cell.getStringCellValue().trim();
+            case NUMERIC -> String.valueOf((int) cell.getNumericCellValue());
+            default -> "";
+        };
+    }
+
+    private LocalTime getTimeFromCell(Cell cell, String label, int rowNum, List<String> result) {
+        if (cell == null || !DateUtil.isCellDateFormatted(cell)) {
+            result.add("Строка " + (rowNum + 1) + ": " + label + " - неверный формат.");
+            return null;
+        }
+        Date date = cell.getDateCellValue();
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalTime();
+    }
+
+    private Long getStatusId(Cell cell, int rowNum, List<String> result) {
+        if (cell == null || cell.getCellType() != CellType.STRING) return 1L;
+
+        String statusCode = cell.getStringCellValue().trim();
+        return slotStatusRepository.findByVcCode(statusCode)
+                .map(status -> status.getNStatusId())
+                .orElseGet(() -> {
+                    result.add("Строка " + (rowNum + 1) + ": некорректный код статуса слота.");
+                    return 1L;
+                });
+    }
+
+    private boolean isRowEmpty(Row row) {
+        for (int i = 0; i < 5; i++) {
+            Cell cell = row.getCell(i);
+            if (cell != null && cell.getCellType() != CellType.BLANK) return false;
+        }
+        return true;
     }
 }

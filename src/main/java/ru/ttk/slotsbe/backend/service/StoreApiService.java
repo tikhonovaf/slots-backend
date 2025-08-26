@@ -25,7 +25,7 @@ public class StoreApiService implements StoresApiDelegate {
     private VStoreRepository vStoreRepository;
 
     @Autowired
-    private StoreMapper StoreMapper;
+    private StoreMapper storeMapper;
 
     /**
      * Список нефтебаз
@@ -36,7 +36,7 @@ public class StoreApiService implements StoresApiDelegate {
                 vStoreRepository
                             .findAll()
                             .stream()
-                            .map(v -> StoreMapper.fromViewToDto(v))
+                            .map(storeMapper::fromViewToDto)
                             .collect(Collectors.toList());
 
         return ResponseEntity.ok(result);

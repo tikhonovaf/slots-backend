@@ -1,0 +1,89 @@
+accessKey:
+  expireDays: ${ACCESS_KEY_EXPIRE_DAYS:31}
+debug: false
+logging:
+  level:
+    org:
+      hibernate: INFO
+      springframework:
+        web:
+          filter:
+            CommonsRequestLoggingFilter: INFO
+    root: INFO
+slotsbe:
+  decodeDate: ${DECODE_DATA:FALSE}
+  timeZone: ${TIME_ZONE:Europe/Moscow}
+
+server:
+  port: 8081
+  servlet:
+    session:
+      timeout: 64800m
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  session:
+    timeout: 3888000
+spring:
+  data:
+    rest:
+      basePath: /api
+      default-page-size: 10
+      max-page-size: 10000
+      returnBodyOnCreate: true
+      returnBodyOnUpdate: true
+  #  sql:
+  #    init:
+  #      mode: always
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=Oracle;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: none
+    jdbc:
+      batch_versioned_data: true
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+    show-sql: true
+  h2:
+    console:
+      enabled:true
+      path:/h2-console
+  mvc:
+    pathmatch:
+      matching-strategy: ant-path-matcher
+  servlet:
+    multipart:
+      max-file-size: 150MB
+      max-request-size: 150MB
+  mail:
+    host: smtp.yandex.ru
+    port: 465
+    username: tikhonovafZel@yandex.ru
+    password: lrvbtcwgqqmfupgp
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+            starttls:
+              enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+springdoc:
+  swagger-ui:
+    urls:
+      - url: /v3/api-docs
+        name: slots-backend

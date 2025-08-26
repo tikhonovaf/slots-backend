@@ -159,7 +159,7 @@ paths:
   /clients:
     get:
       summary: Выборка списка клиентов
-      operationId: getСlients
+      operationId: getClients
       tags:
         - REF
       responses:

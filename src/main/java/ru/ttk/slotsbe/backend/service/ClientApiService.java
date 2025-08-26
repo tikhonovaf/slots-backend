@@ -28,15 +28,17 @@ public class ClientApiService implements ClientsApiDelegate {
     private ClientMapper clientMapper;
 
     /**
-     * Список клиентов
+     * GET /clients : Выборка списка клиентов
+     *
+     * @return Список клиентов (status code 200)
      */
     @Override
-    public ResponseEntity<List<ClientDto>> getlients() {
+    public ResponseEntity<List<ClientDto>> getClients() {
         List<ClientDto>  result =
                 vClientRepository
                             .findAll()
                             .stream()
-                            .map(v -> clientMapper.fromViewToDto(v))
+                            .map(clientMapper::fromViewToDto)
                             .collect(Collectors.toList());
 
         return ResponseEntity.ok(result);

@@ -6,8 +6,9 @@ import lombok.Getter;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.Immutable;
+
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 /**
@@ -15,6 +16,7 @@ import java.time.LocalTime;
  */
 @Entity
 @Getter
+@Immutable
 @Table(name = "v_slot")
 public class VSlot {
 

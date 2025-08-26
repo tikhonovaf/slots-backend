@@ -6,11 +6,13 @@ import lombok.Getter;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.Immutable;
 
 /**
  * Нефтебаза
  */
 @Entity
+@Immutable
 @Getter
 @Table(name = "v_store")
 public class VStore {

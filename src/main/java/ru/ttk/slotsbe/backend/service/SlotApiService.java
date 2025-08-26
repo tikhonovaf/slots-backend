@@ -200,9 +200,9 @@ public class SlotApiService implements SlotsApiDelegate {
                 // Цикл по дням
                 for (LocalDate genDate = dateBegin; !genDate.isAfter(dateEnd); genDate = genDate.plusDays(1)) {
                     // Если на данную дату для данной нефтебазы нет резервированых слотов, то генерим
-                    if (slotRepository.findAllByStoreIdAndDate(storeId, genDate).isEmpty()) {
+                    if (slotRepository.findReservedSlotsByStoreIdAndDate(storeId, genDate).isEmpty()) {
                         //  Удаляем слоты на данную дату для данной нефтебазы
-                        slotRepository.deleteAllByStoreIdAndDate(storeId, genDate);
+                        slotRepository.deleteSlotsByStoreIdAndDate(storeId, genDate);
                         // генерим слоты на основе шаблона
                         for (SlotTemplate template : templates) {
                             Slot slot = new Slot();

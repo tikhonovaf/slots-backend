@@ -75,5 +75,11 @@ public class ClientUser {
      */
     String vcPhone;
 
+    /**
+     * role
+     */
+
+    @Column(name = "n_role_id")
+    Long nRoleId;
 
 }

@@ -30,6 +30,19 @@ paths:
         200:
           description: Пустой ответ
 
+  /session:
+    get:
+      summary: Выборка данных о сессии пользователя
+      operationId: session
+      tags:
+        - LOGIN
+      responses:
+        200:
+          description: Информация о сессии пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/sessionDto"
   /slots/statuses:
     post:
       summary: Выборка списка статусов слотов
@@ -549,4 +562,29 @@ components:
           type: string
           description: Наименование
           example: Наименование 1
-  
+    sessionDto:
+      type: object
+      description: Данные о сессии пользователя
+      properties:
+        actual:
+          type: boolean
+          description: Признак актуальности сессии
+          example: true
+        username:
+          type: string
+          description: Имя пользователя
+          example: USER1
+        name:
+          type: string
+          description: Наименование пользователя
+          example: Пользователь-1
+        roleId:
+          type: integer
+          format: int64
+          description: Идентификатор роли пользователя
+          example: ADMIN
+        role:
+          type: string
+          description: Роль пользователя
+          example: ADMIN
+

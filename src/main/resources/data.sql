@@ -26,11 +26,19 @@ VALUES
     (4, 'П', 'Пересменка')
 ;
 
-INSERT INTO client_user(n_user_id, vc_first_name, vc_last_name, n_client_id, vc_login, vc_password, vc_email)
+INSERT INTO slot_role( n_role_id, vc_code, vc_name)
+VALUES
+    (1, 'A', 'Администратор' ),
+    (2, 'D', 'Диспетчер'),
+    (3, 'C', 'Клиент')
+;
+
+INSERT INTO client_user(n_user_id, vc_first_name, vc_last_name, n_client_id,
+                        vc_login, vc_password, vc_email, n_role_id)
 VALUES (1, 'ADMIN', 'ADMIN', 1,
         'ADMIN',
         '8257a3811b9f6bb9d59dfb3931e220fa5574cee38fff551066caca1a50b1691ebdffa87f2d7213910e8bdbcf4d669c2756e57196667dd8f5e8af66971b2',
-         'tixft@mail.ru');
+         'tixft@mail.ru', 1);
 
 INSERT INTO loading_point( n_loading_point_id, n_store_id, vc_code, vc_name, vc_comment)
 VALUES

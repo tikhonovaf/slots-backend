@@ -18,6 +18,15 @@ CREATE TABLE IF NOT EXISTS v_store
     )
 ;
 
+
+CREATE TABLE IF NOT EXISTS slot_role
+(
+    n_role_id bigint NOT NULL,
+    vc_code varchar(100),
+    vc_name varchar(1000)
+    )
+;
+
 CREATE TABLE IF NOT EXISTS slot_status
 (
     n_status_Id bigint NOT NULL,
@@ -39,9 +48,10 @@ CREATE TABLE IF NOT EXISTS client_user (
     d_start_date date,
     d_end_date date,
     n_client_id bigint NOT NULL,
-    vc_phone varchar(100),
-    vc_login varchar(100),
-    vc_password varchar(1000),
+    vc_phone varchar(100) ,
+    vc_login varchar(100) NOT NULL,
+    vc_password varchar(1000) NOT NULL,
+    n_role_id bigint NOT NULL,
     CONSTRAINT client_user_pkey PRIMARY KEY (n_user_id)
     );
 

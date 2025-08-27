@@ -47,16 +47,17 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("*")); // 🔒 Лучше указать конкретные домены в проде
+        config.setAllowedOriginPatterns(List.of("http://localhost:3000")); // 👈 Используем шаблон
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "XSRF-Token"));
         config.setExposedHeaders(List.of("XSRF-Token"));
-        config.setAllowCredentials(true);
+        config.setAllowCredentials(true); // 👈 Можно использовать, если origin указан явно
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
     }
+
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {

@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS v_client
     )
 ;
 
+
 CREATE TABLE IF NOT EXISTS v_store
 (
     n_store_id bigint NOT NULL,
@@ -47,7 +48,7 @@ CREATE TABLE IF NOT EXISTS client_user (
     vc_email varchar(100),
     d_start_date date,
     d_end_date date,
-    n_client_id bigint NOT NULL,
+    n_client_id bigint,
     vc_phone varchar(100) ,
     vc_login varchar(100) NOT NULL,
     vc_password varchar(1000) NOT NULL,
@@ -127,3 +128,17 @@ CREATE TABLE IF NOT EXISTS slot_template (
                                     n_status_Id bigint NOT NULL,
     CONSTRAINT slot_template_pkey PRIMARY KEY (n_slot_template_id)
     );
+
+
+-- Список пользователей покупателей ( view)
+
+CREATE VIEW IF NOT EXISTS v_client_user
+AS
+SELECT
+    u.n_user_id,
+    c.vc_name || ':' || u.vc_email as vc_info,
+    u.vc_email
+    FROM v_client c
+    JOIN client_user u on u.n_client_id = c.n_client_id
+    WHERE u.n_role_id = 3
+;

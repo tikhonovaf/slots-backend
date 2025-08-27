@@ -183,6 +183,20 @@ paths:
               schema:
                 $ref: "#/components/schemas/clientDtos"
 
+  /clients/users:
+    get:
+      summary: Выборка списка пользователей клиентов
+      operationId: getClientsUsers
+      tags:
+        - REF
+      responses:
+        200:
+          description: Список пользователей клиентов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/clientUsersDtos"
+
   /stores:
     get:
       summary: Выборка списка нефтебаз
@@ -410,6 +424,29 @@ components:
           type: string
           description: Наименование
           example: Наименование 1
+    clientUsersDtos:
+      type: array
+      description: Список пользователей клиентов
+      items:
+        $ref: "#/components/schemas/clientUsersDto"
+    clientUsersDto:
+      type: object
+      description: Пользователь клиента
+      properties:
+        nUserId:
+          type: integer
+          format: int64
+          description: Идентификатор пользователя клиента
+          example: 1
+        vcInfo:
+          type: string
+          description: Наименование клиента + email
+          example: Наименование 1
+        vcEmail:
+          type: string
+          description: email
+          example: example@mail.ru
+
     storeDtos:
       type: array
       description: Список нефтебаз

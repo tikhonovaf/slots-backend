@@ -8,6 +8,7 @@ import ru.ttk.slotsbe.backend.mapper.ClientMapper;
 import ru.ttk.slotsbe.backend.repository.VClientRepository;
 import ru.ttk.slotsbe.backend.api.*;
 import ru.ttk.slotsbe.backend.dto.*;
+import ru.ttk.slotsbe.backend.repository.VClientUserRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,6 +26,10 @@ public class ClientApiService implements ClientsApiDelegate {
     private VClientRepository vClientRepository;
 
     @Autowired
+    private VClientUserRepository vClientUserRepository;
+
+
+    @Autowired
     private ClientMapper clientMapper;
 
     /**
@@ -34,14 +39,31 @@ public class ClientApiService implements ClientsApiDelegate {
      */
     @Override
     public ResponseEntity<List<ClientDto>> getClients() {
-        List<ClientDto>  result =
+        List<ClientDto> result =
                 vClientRepository
-                            .findAll()
-                            .stream()
-                            .map(clientMapper::fromViewToDto)
-                            .collect(Collectors.toList());
+                        .findAll()
+                        .stream()
+                        .map(clientMapper::fromViewToDto)
+                        .collect(Collectors.toList());
 
         return ResponseEntity.ok(result);
     }
 
+    /**
+     * GET /clients/users : Выборка списка пользователей клиентов
+     *
+     * @return Список пользователей клиентов (status code 200)
+     */
+    public ResponseEntity<List<ClientUsersDto>> getClientsUsers() {
+
+        List<ClientUsersDto> result =
+                vClientUserRepository
+                        .findAll()
+                        .stream()
+                        .map(clientMapper::fromViewToDto)
+                        .collect(Collectors.toList());
+
+        return ResponseEntity.ok(result);
+
+    }
 }

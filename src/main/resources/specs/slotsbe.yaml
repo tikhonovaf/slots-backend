@@ -30,6 +30,44 @@ paths:
         200:
           description: Пустой ответ
 
+  /admin/clientUsers:
+    post:
+      summary: Добавление пользователя
+      operationId: addClientUser
+      tags:
+        - ADMIN
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/clientUserInDto"
+      responses:
+        200:
+          description: Пустой ответ
+
+  /admin/clientUsers/{id}:
+    patch:
+      summary: Изменение пользователя
+      operationId: modifyClientUser
+      tags:
+        - ADMIN
+      parameters:
+        - name: id
+          description: ИД пользователя
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/clientUserInDto"
+      responses:
+        200:
+          description: Пустой ответ
+
   /session:
     get:
       summary: Выборка данных о сессии пользователя
@@ -624,4 +662,55 @@ components:
           type: string
           description: Роль пользователя
           example: ADMIN
+    clientUserInDto:
+      type: object
+      description: Данные о пользователе
+      properties:
+        vcFirstName:
+          type: string
+          description: Имя
+          example: Петр
+        vcLastName:
+          type: string
+          description: Фамилия
+          example: Петров
+        vcSecondName:
+          type: string
+          description: Отчество
+          example: Петрович
+        vcEmail:
+          type: string
+          description: email
+          example: email
+        dStartDate:
+          type: string
+          format: date
+          description: Дата начала действия
+          example: 2021-08-17
+        dEndDate:
+          type: string
+          format: date
+          description: Дата окончания действия
+          example: 2021-08-17
+        nRoleId:
+          type: integer
+          format: int64
+          description: Идентификатор роли
+          example: 1
+        vcClientCode:
+          type: string
+          description: Код клиента
+          example: Код 1
+        vcPhone:
+          type: string
+          description: phone
+          example: +7(916)234-67-89
+        vcLogin:
+          type: string
+          description: Логин
+          example: test
+        vcPassword:
+          type: string
+          description: Логин
+          example: test
 

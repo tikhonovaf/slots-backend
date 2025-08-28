@@ -7,4 +7,5 @@ import java.util.List;
 
 
 public interface VClientRepository extends JpaRepository<VClient, Long> {
+    List<VClient> findAllByVcCode(String vcCode);
 }

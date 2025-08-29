@@ -1,25 +1,4 @@
 SET MODE Oracle;
-
--- Список покупателей (из view)
-
-CREATE TABLE IF NOT EXISTS v_client
-(
-    n_client_id bigint NOT NULL,
-    vc_code varchar(100),
-    vc_name varchar(1000)
-    )
-;
-
-
-CREATE TABLE IF NOT EXISTS v_store
-(
-    n_store_id bigint NOT NULL,
-    vc_code varchar(100),
-    vc_name varchar(1000)
-    )
-;
-
-
 CREATE TABLE IF NOT EXISTS slot_role
 (
     n_role_id bigint NOT NULL,
@@ -37,6 +16,51 @@ CREATE TABLE IF NOT EXISTS slot_status
 ;
 
 
+    --  Таблица для эмуляции таблоицы из Mercury_GT
+CREATE TABLE IF NOT EXISTS SI_V_SUBJECTS
+(
+    N_SUBJECT_ID bigint NOT NULL,
+    vc_code varchar(100),
+    vc_name varchar(1000),
+    N_SUBJ_TYPE_ID bigint
+    )
+;
+
+-- Список клиентов, которые могут резервировать слоты
+CREATE TABLE slot_client
+(
+    n_slot_client_Id bigint NOT NULL,
+    CONSTRAINT slot_client_pkey PRIMARY KEY (n_slot_client_Id)
+);
+
+--  VIEW  со списком отобранных клиентов
+CREATE VIEW v_client AS
+SELECT
+    SC.n_slot_client_Id AS n_client_id,
+    S.vc_code,
+    S.vc_name
+FROM slot_client sc
+         JOIN SI_V_SUBJECTS S ON SC.n_slot_client_Id = S.N_SUBJECT_ID
+;
+
+
+
+-- Список нефтебаз, для которых есть расписание
+CREATE TABLE slot_store
+(
+    n_slot_store_Id bigint NOT NULL,
+    CONSTRAINT slot_store_pkey PRIMARY KEY (n_slot_store_Id)
+);
+
+--  VIEW  со списком отобранных нефтебаз
+CREATE VIEW v_store AS
+SELECT
+    SS.n_slot_store_Id AS n_store_id,
+    S.vc_code,
+    S.vc_name
+FROM slot_store ss
+         JOIN SI_V_SUBJECTS S ON SS.n_slot_store_Id = S.N_SUBJECT_ID
+;
 
 --  Список пользователей (новая таблица)
 --  Table: client_user

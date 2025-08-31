@@ -6,11 +6,11 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import ru.ttk.slotsbe.backend.model.LoadingPoint;
 import ru.ttk.slotsbe.backend.model.SlotTemplate;
 import ru.ttk.slotsbe.backend.model.VLoadingPoint;
-import ru.ttk.slotsbe.backend.repository.SlotStatusRepository;
-import ru.ttk.slotsbe.backend.repository.SlotTemplateRepository;
-import ru.ttk.slotsbe.backend.repository.VLoadingPointRepository;
+import ru.ttk.slotsbe.backend.model.VStore;
+import ru.ttk.slotsbe.backend.repository.*;
 
 import java.io.InputStream;
 import java.time.LocalTime;
@@ -25,6 +25,8 @@ public class ExcelUploadService {
     private final SlotTemplateRepository slotTemplateRepository;
     private final VLoadingPointRepository vLoadingPointRepository;
     private final SlotStatusRepository slotStatusRepository;
+    private final VStoreRepository vStoreRepository;
+    private final LoadingPointRepository loadingPointRepository;
 
     public List<String> saveSlotTemplatesFromExcel(MultipartFile file) {
         List<String> result = new ArrayList<>();
@@ -59,6 +61,7 @@ public class ExcelUploadService {
 
         return result;
     }
+
 
     private Optional<SlotTemplate> parseRow(Row row, List<String> result, Set<Long> storeIdsToDelete) {
         SlotTemplate template = new SlotTemplate();
@@ -137,4 +140,66 @@ public class ExcelUploadService {
         }
         return true;
     }
+
+    public List<String> saveLoadingPointsFromExcel(MultipartFile file) {
+        List<String> result = new ArrayList<>();
+        Set<Long> storeIdsToDelete = new HashSet<>();
+        List<LoadingPoint> loadingPoints = new ArrayList<>();
+
+        try (InputStream is = file.getInputStream();
+             Workbook workbook = new XSSFWorkbook(is)) {
+
+            Sheet sheet = workbook.getSheetAt(0);
+
+            for (Row row : sheet) {
+                if (row.getRowNum() == 0 || isRowEmpty(row)) continue;
+
+                Optional<LoadingPoint> optionalLoadingPoint = parseLoadingPointRow(row, result, storeIdsToDelete);
+                optionalLoadingPoint.ifPresent(loadingPoints::add);
+            }
+
+            if (result.isEmpty()) {
+                storeIdsToDelete.forEach(loadingPointRepository::deleteAllByStoreId);
+                loadingPointRepository.saveAll(loadingPoints);
+                result.add("Шаблон загружен успешно. Загружено " + loadingPoints.size() + " строк");
+                log.info("Загружено {} строк", loadingPoints.size());
+            } else {
+                log.warn("Ошибки при загрузке Excel: {}", result);
+            }
+
+        } catch (Exception e) {
+            log.error("Ошибка при обработке Excel-файла", e);
+            throw new RuntimeException("Ошибка при обработке Excel-файла", e);
+        }
+
+        return result;
+    }
+
+    private Optional<LoadingPoint> parseLoadingPointRow(Row row, List<String> result, Set<Long> storeIdsToDelete) {
+        LoadingPoint loadingPoint = new LoadingPoint();
+
+        String storeCode = getCellStringValue(row.getCell(0));
+
+        if (storeCode.isEmpty()) {
+            result.add("Строка " + (row.getRowNum() + 1) + ": не задан код нефтебазы.");
+            return Optional.empty();
+        }
+
+        List<VStore> vStores =
+                vStoreRepository.findAllByVcCode(storeCode);
+
+        if (vStores.isEmpty()) {
+            result.add("Строка " + (row.getRowNum() + 1) + ": не найдена нефтебаза с заданным кодом.");
+            return Optional.empty();
+        }
+        VStore vStore = vStores.get(0);
+        loadingPoint.setNStoreId(vStore.getNStoreId());
+        loadingPoint.setVcCode(getCellStringValue(row.getCell(1)));
+        loadingPoint.setVcName(getCellStringValue(row.getCell(2)));
+        loadingPoint.setVcComment(getCellStringValue(row.getCell(3)));
+        storeIdsToDelete.add(vStore.getNStoreId());
+        return Optional.of(loadingPoint);
+    }
+
+
 }

@@ -1,22 +1,24 @@
 package ru.ttk.slotsbe.backend.model;
 
-import jakarta.persistence.Column;
+import jakarta.persistence.*;
 import lombok.Getter;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import lombok.Setter;
 
 /**
  * Пункт налива
  */
 @Entity
 @Getter
+@Setter
 public class LoadingPoint {
 
     /**
      * Идентификатор
      */
     @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "slot_seq")
+    @SequenceGenerator(name = "slot_seq", sequenceName = "slot_seq", allocationSize = 1)
     Long n_loading_point_id;
 
     /**
@@ -38,6 +40,6 @@ public class LoadingPoint {
     /**
      * Комментарий
      */
-    String vcСomment;
+    String vcComment;
 
 }

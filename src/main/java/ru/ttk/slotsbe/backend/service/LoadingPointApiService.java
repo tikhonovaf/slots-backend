@@ -4,8 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import ru.ttk.slotsbe.backend.api.LoadingPointsApiDelegate;
-import ru.ttk.slotsbe.backend.dto.LoadingPointDto;
+import org.springframework.web.multipart.MultipartFile;
+import ru.ttk.slotsbe.backend.api.*;
+import ru.ttk.slotsbe.backend.dto.*;
 import ru.ttk.slotsbe.backend.mapper.LoadingPointMapper;
 import ru.ttk.slotsbe.backend.repository.VLoadingPointRepository;
 
@@ -24,6 +25,7 @@ public class LoadingPointApiService implements LoadingPointsApiDelegate {
 
     private final VLoadingPointRepository vLoadingPointRepository;
     private final LoadingPointMapper loadingPointMapper;
+    private final ExcelUploadService excelUploadService;
 
     /**
      * Получает список пунктов налива по ID склада.
@@ -52,4 +54,19 @@ public class LoadingPointApiService implements LoadingPointsApiDelegate {
         log.info("Найдено {} пунктов налива для storeId {}", result.size(), storeId);
         return ResponseEntity.ok(result);
     }
+
+    /**
+     * POST /loadingPoints/upload : Загрузка файла c данными по пунктам налива
+     *
+     * @param file Файл для загрузки (optional)
+     * @return Список сообщений о загрузке (status code 200)
+     */
+    @Override
+    public  ResponseEntity<List<String>> loadingPointsUpload(MultipartFile file) {
+        List<String> messages = excelUploadService.saveLoadingPointsFromExcel(file);
+        return ResponseEntity.ok(messages);
+
+    }
+
+
 }

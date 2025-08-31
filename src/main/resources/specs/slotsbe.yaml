@@ -286,6 +286,30 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/loadingPointDtos"
+  /loadingPoints/upload:
+    post:
+      tags:
+        - REF
+      operationId: loadingPointsUpload
+      summary: Загрузка файла c данными по пунктам налива
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Файл для загрузки
+      responses:
+        200:
+          description: Список сообщений о загрузке
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/uploadMessages"
 
 components:
   schemas:

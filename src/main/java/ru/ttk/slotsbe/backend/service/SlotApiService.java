@@ -1,6 +1,7 @@
 package ru.ttk.slotsbe.backend.service;//package ru.ttk.slotsbe.backend.service;
 
 import jakarta.mail.MessagingException;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -74,23 +75,6 @@ public class SlotApiService implements SlotsApiDelegate {
 
         return ResponseEntity.ok(result);
 
-    }
-
-    /**
-     * Установка для слота статуса и указание клиента
-     */
-    @Override
-    public ResponseEntity<Void> reserveSlots(List<ModifiedSlotDto> modifiedSlotDtos) {
-
-        for (ModifiedSlotDto slot : modifiedSlotDtos) {
-            if (slotRepository.findById(slot.getnSlotId()).isPresent()) {
-                Slot modifiedSlot = slotRepository.findById(slot.getnSlotId()).get();
-                modifiedSlot.setNSlotId(slot.getnSlotId());
-                modifiedSlot.setNClientId(slot.getnClientId());
-                slotRepository.save(modifiedSlot);
-            }
-        }
-        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -242,5 +226,47 @@ public class SlotApiService implements SlotsApiDelegate {
 
     }
 
+
+    /**
+     * PATCH /slots/reserve : Резервирование слотов
+     *
+     * @param modifiedSlotDtos  (optional)
+     * @return Пустой ответ (status code 200)
+     */
+    @Override
+    public ResponseEntity<Void> reserveSlots(List<@Valid ModifiedSlotDto> modifiedSlotDtos) {
+
+        for (ModifiedSlotDto slot : modifiedSlotDtos) {
+            if (slotRepository.findById(slot.getnSlotId()).isPresent()) {
+                Slot modifiedSlot = slotRepository.findById(slot.getnSlotId()).get();
+                modifiedSlot.setNStatusId(2L);
+                modifiedSlot.setNClientId(slot.getnClientId());
+                slotRepository.save(modifiedSlot);
+            }
+        }
+        return ResponseEntity.noContent().build();
+
+    }
+
+    /**
+     * PATCH /slots/free : Снятие слотов с резерва
+     *
+     * @param modifiedSlotDtos  (optional)
+     * @return Пустой ответ (status code 200)
+     */
+    @Override
+    public ResponseEntity<Void> freeSlots(List<@Valid ModifiedSlotDto> modifiedSlotDtos) {
+
+        for (ModifiedSlotDto slot : modifiedSlotDtos) {
+            if (slotRepository.findById(slot.getnSlotId()).isPresent()) {
+                Slot modifiedSlot = slotRepository.findById(slot.getnSlotId()).get();
+                modifiedSlot.setNStatusId(1L);
+                modifiedSlot.setNClientId(slot.getnClientId());
+                slotRepository.save(modifiedSlot);
+            }
+        }
+        return ResponseEntity.noContent().build();
+
+    }
 
 }

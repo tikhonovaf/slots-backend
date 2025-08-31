@@ -112,7 +112,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/slotDtos"
-  /slots/:
+
+  /slots/reserve:
     patch:
       summary: Резервирование слотов
       operationId: reserveSlots
@@ -126,6 +127,22 @@ paths:
       responses:
         200:
           description: Пустой ответ
+  /slots/free:
+    patch:
+      summary: Снятие с резерва
+      operationId: freeSlots
+      tags:
+        - SLOT
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/modifiedSlotDtos"
+      responses:
+        200:
+          description: Пустой ответ
+
+  /slots/:
     post:
       summary: формирование слотов на основе шаблона
       operationId: generateSlots
@@ -434,11 +451,6 @@ components:
           type: integer
           format: int64
           description: Идентификатор клиента
-          example: 1
-        nStatusId:
-          type: integer
-          format: int64
-          description: Идентификатор статуса
           example: 1
     clientDtos:
       type: array

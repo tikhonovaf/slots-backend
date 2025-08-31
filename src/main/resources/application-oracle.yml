@@ -1,5 +1,3 @@
-accessKey:
-  expireDays: ${ACCESS_KEY_EXPIRE_DAYS:31}
 debug: false
 logging:
   level:
@@ -37,12 +35,10 @@ spring:
   #    init:
   #      mode: always
   datasource:
-    url: jdbc:oracle:thin:@localhost:1521:xe
-    username: ${DATABASE_USER:oracle_user}
-    password: ${DATABASE_PASSWORD:oracle_pass}
-    driver-class-name=oracle:
-      jdbc:
-        OracleDriver:
+    url: jdbc:oracle:thin:@//localhost:1521/XEPDB1
+    username: SLOTUSER
+    password: SLOTUSER
+    driver-class-name: oracle.jdbc.OracleDriver
   jpa:
     hibernate:
       ddl-auto: none

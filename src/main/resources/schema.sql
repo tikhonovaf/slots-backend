@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS SI_V_SUBJECTS
     N_SUBJECT_ID bigint NOT NULL,
     vc_code varchar(100),
     vc_name varchar(1000),
-    N_SUBJ_TYPE_ID bigint
+    N_SUBJ_TYPE_ID bigint,
+    CONSTRAINT SI_V_SUBJECTS_pkey PRIMARY KEY (N_SUBJECT_ID)
     )
 ;
 

@@ -126,7 +126,11 @@ paths:
               $ref: "#/components/schemas/modifiedSlotDtos"
       responses:
         200:
-          description: Пустой ответ
+          description: Список сообщений о cнятии с резерва
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/uploadMessages"
   /slots/free:
     patch:
       summary: Снятие с резерва
@@ -140,7 +144,11 @@ paths:
               $ref: "#/components/schemas/modifiedSlotDtos"
       responses:
         200:
-          description: Пустой ответ
+          description: Список сообщений о cнятии с резерва
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/uploadMessages"
 
   /slots/:
     post:
@@ -292,6 +300,31 @@ paths:
         - REF
       operationId: loadingPointsUpload
       summary: Загрузка файла c данными по пунктам налива
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Файл для загрузки
+      responses:
+        200:
+          description: Список сообщений о загрузке
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/uploadMessages"
+
+  /admin/clientUsers/upload:
+    post:
+      tags:
+        - ADMIN
+      operationId: clientUsersUpload
+      summary: Загрузка файла c данными по пользователям клиентов
       requestBody:
         required: true
         content:

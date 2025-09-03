@@ -64,6 +64,7 @@ CREATE TABLE slot_client
     CONSTRAINT slot_client_pkey PRIMARY KEY (n_slot_client_Id)
 );
 
+
 --  VIEW  со списком отобранных клиентов
 CREATE VIEW v_client AS
 SELECT SC.n_slot_client_Id AS n_client_id,

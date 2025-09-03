@@ -1,5 +1,6 @@
 package ru.ttk.slotsbe.backend.service;//package ru.ttk.slotsbe.backend.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,17 +21,12 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class ClientApiService implements ClientsApiDelegate {
 
-    @Autowired
-    private VClientRepository vClientRepository;
-
-    @Autowired
-    private VClientUserRepository vClientUserRepository;
-
-
-    @Autowired
-    private ClientMapper clientMapper;
+    private  final VClientRepository vClientRepository;
+    private  final VClientUserRepository vClientUserRepository;
+    private  final ClientMapper clientMapper;
 
     /**
      * GET /clients : Выборка списка клиентов

@@ -1,11 +1,17 @@
 version: '3.8'
 
 services:
-  slotsbe:
-    image: slotsbe:latest   # имя твоего локального образа
-    container_name: slotsbe
+  oracle-xe:
+    image: container-registry.oracle.com/database/express:21.3.0-xe
+    container_name: oracle-xe
     ports:
-      - "8081:8081"         # проброс порта, если твой Spring Boot слушает 8080
+      - "1521:1521"
     environment:
-      JAVA_OPTS: "-Xms1024m -Xmx1024m"
+      ORACLE_PASSWORD: welcome123
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+      - ./init:/opt/oracle/scripts/startup
     restart: unless-stopped
+
+volumes:
+  oracle-data:

@@ -4,6 +4,7 @@ import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -14,13 +15,10 @@ import java.util.Arrays;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class EmailService {
 
     private final JavaMailSender mailSender;
-
-    public EmailService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
-    }
 
     public String sendEmailWithExcelAttachment(
             String toEmail,

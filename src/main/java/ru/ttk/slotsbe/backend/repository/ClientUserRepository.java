@@ -1,7 +1,9 @@
 package ru.ttk.slotsbe.backend.repository;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import ru.ttk.slotsbe.backend.model.ClientUser;
 import ru.ttk.slotsbe.backend.model.VSlot;
@@ -18,5 +20,12 @@ public interface ClientUserRepository extends JpaRepository<ClientUser, Long> {
             , nativeQuery = true)
 
     List<ClientUser> findAllByNUserIds(List <Long> ids);
+
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM client_user\n  " +
+            " WHERE n_client_id = :nClientId "
+            , nativeQuery = true)
+    void deleteAllByClientId(Long nClientId);
 
 }

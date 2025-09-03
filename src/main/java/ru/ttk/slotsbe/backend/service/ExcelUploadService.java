@@ -4,13 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import ru.ttk.slotsbe.backend.model.LoadingPoint;
-import ru.ttk.slotsbe.backend.model.SlotTemplate;
-import ru.ttk.slotsbe.backend.model.VLoadingPoint;
-import ru.ttk.slotsbe.backend.model.VStore;
+import ru.ttk.slotsbe.backend.exception.ValidateException;
+import ru.ttk.slotsbe.backend.model.*;
 import ru.ttk.slotsbe.backend.repository.*;
+import ru.ttk.slotsbe.backend.security.Sha512PasswordEncoder;
 
 import java.io.InputStream;
 import java.time.LocalTime;
@@ -27,6 +27,9 @@ public class ExcelUploadService {
     private final SlotStatusRepository slotStatusRepository;
     private final VStoreRepository vStoreRepository;
     private final LoadingPointRepository loadingPointRepository;
+    private final VClientRepository vClientRepository;
+    private final ClientUserRepository clientUserRepository;
+    private final Sha512PasswordEncoder sha512PasswordEncoder;
 
     public List<String> saveSlotTemplatesFromExcel(MultipartFile file) {
         List<String> result = new ArrayList<>();
@@ -200,6 +203,88 @@ public class ExcelUploadService {
         storeIdsToDelete.add(vStore.getNStoreId());
         return Optional.of(loadingPoint);
     }
+
+
+    public List<String> saveClientUsersFromExcel(MultipartFile file) {
+        List<String> result = new ArrayList<>();
+        Set<Long> clientIdsToDelete = new HashSet<>();
+        List<ClientUser> clientUsers = new ArrayList<>();
+
+        try (InputStream is = file.getInputStream();
+             Workbook workbook = new XSSFWorkbook(is)) {
+
+            Sheet sheet = workbook.getSheetAt(0);
+
+            for (Row row : sheet) {
+                if (row.getRowNum() == 0 || isRowEmpty(row)) continue;
+
+                Optional<ClientUser> optionalClientUser = parseClientUserRow(row, result, clientIdsToDelete);
+
+                optionalClientUser.ifPresent(clientUsers::add);
+
+            }
+
+            if (result.isEmpty()) {
+                clientIdsToDelete.forEach(clientUserRepository::deleteAllByClientId);
+                clientUserRepository.saveAll(clientUsers);
+                result.add("Шаблон загружен успешно. Загружено " + clientUsers.size() + " строк");
+                log.info("Загружено {} строк", clientUsers.size());
+            } else {
+                log.warn("Ошибки при загрузке Excel: {}", result);
+            }
+
+        } catch (Exception e) {
+            log.error("Ошибка при обработке Excel-файла", e);
+            throw new RuntimeException("Ошибка при обработке Excel-файла", e);
+        }
+
+        return result;
+    }
+
+    private Optional<ClientUser> parseClientUserRow(Row row, List<String> result, Set<Long> clientIdsToDelete) {
+        ClientUser clientUser = new ClientUser();
+
+        String clientCode = getCellStringValue(row.getCell(0));
+
+        if (clientCode.isEmpty()) {
+            result.add("Строка " + (row.getRowNum() + 1) + ": не задан код клиента.");
+            return Optional.empty();
+        }
+
+        List<VClient> vClients =
+                vClientRepository.findAllByVcCode(clientCode);
+
+        if (vClients.isEmpty()) {
+            result.add("Строка " + (row.getRowNum() + 1) + ": не найден клиент с заданным кодом.");
+            return Optional.empty();
+        }
+        VClient vClient = vClients.get(0);
+        clientUser.setNClientId(vClient.getNClientId());
+        clientUser.setVcLastName(getCellStringValue(row.getCell(1)));
+        clientUser.setVcFirstName(getCellStringValue(row.getCell(2)));
+        clientUser.setVcSecondName(getCellStringValue(row.getCell(3)));
+        clientUser.setVcLogin(getCellStringValue(row.getCell(4)));
+        //  Проверяем уникальность логина
+        Optional<ClientUser> optionalClientUserUnique = clientUserRepository.findByVcLogin(clientUser.getVcLogin());
+        if (optionalClientUserUnique.isPresent()) {
+            result.add("Строка " + (row.getRowNum() + 1) + ": логин не является уникальным.");
+            return Optional.empty();
+        }
+
+        //  шифруем пароль
+        clientUser.setVcPassword(getCellStringValue(row.getCell(5)));
+        if (clientUser.getVcPassword() != null) {
+            clientUser.setVcPassword(sha512PasswordEncoder.encode(clientUser.getVcPassword()));
+        }
+
+        clientUser.setVcEmail(getCellStringValue(row.getCell(6)));
+        clientUser.setVcPhone(getCellStringValue(row.getCell(7)));
+        clientUser.setNRoleId(3L);
+
+        clientIdsToDelete.add(vClient.getNClientId());
+        return Optional.of(clientUser);
+    }
+
 
 
 }

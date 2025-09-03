@@ -2,6 +2,7 @@ package ru.ttk.slotsbe.backend.service;//package ru.ttk.slotsbe.backend.service;
 
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -21,6 +22,7 @@ import ru.ttk.slotsbe.backend.util.ExcelReportGenerator;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -30,34 +32,19 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class SlotApiService implements SlotsApiDelegate {
 
-    @Autowired
-    private VSlotRepository vSlotRepository;
-
-    @Autowired
-    private VStoreRepository vStoreRepository;
-
-    @Autowired
-    private SlotTemplateRepository slotTemplateRepository;
-
-    @Autowired
-    private SlotRepository slotRepository;
-
-    @Autowired
-    private SlotMapper slotMapper;
-
-    @Autowired
-    private ClientUserRepository clientUserRepository;
-
-    @Autowired
-    private EmailService emailService;
-
-    @Autowired
-    private ExcelUploadService excelUploadService;
-
-    @Autowired
-    private SlotStatusRepository slotStatusRepository;
+    private  final VSlotRepository vSlotRepository;
+    private  final VStoreRepository vStoreRepository;
+    private  final SlotTemplateRepository slotTemplateRepository;
+    private  final SlotRepository slotRepository;
+    private  final SlotMapper slotMapper;
+    private  final ClientUserRepository clientUserRepository;
+    private  final VClientRepository vClientRepository;
+    private  final EmailService emailService;
+    private  final ExcelUploadService excelUploadService;
+    private  final SlotStatusRepository slotStatusRepository;
 
     /**
      * Список слотов
@@ -146,7 +133,6 @@ public class SlotApiService implements SlotsApiDelegate {
             } catch (MessagingException e) {
                 throw new RuntimeException(e);
             }
-
         }
         return ResponseEntity.ok(messages);
     }
@@ -170,42 +156,50 @@ public class SlotApiService implements SlotsApiDelegate {
      */
     public ResponseEntity<List<String>> generateSlots(SlotGenerateParams slotGenerateParams) {
         List<String> messages = new ArrayList<>();
-        List<Slot> slots = new ArrayList<>();
-        // Цикл по нефтебазам
+        List<Slot> slotsToSave = new ArrayList<>();
+
+        LocalDate dateBegin = slotGenerateParams.getdDateBegin();
+        LocalDate dateEnd = slotGenerateParams.getdDateEnd();
+
         for (Long storeId : slotGenerateParams.getnStoreIds()) {
-            if (vStoreRepository.findById(storeId).isPresent()) {  //  если по id найдена нефтебаза
-                String storeCode = vStoreRepository.findById(storeId).get().getVcCode();
-                // Выбираем строки шаблона по данной нефтебазе
-                List<SlotTemplate> templates = slotTemplateRepository.findAllByStoreId(storeId);
-                // Цикл по дням
-                // Задание начальной и конечной даты
-                LocalDate dateBegin = slotGenerateParams.getdDateBegin();
-                LocalDate dateEnd = slotGenerateParams.getdDateEnd();
-                // Цикл по дням
-                for (LocalDate genDate = dateBegin; !genDate.isAfter(dateEnd); genDate = genDate.plusDays(1)) {
-                    // Если на данную дату для данной нефтебазы нет резервированых слотов, то генерим
-                    if (slotRepository.findReservedSlotsByStoreIdAndDate(storeId, genDate).isEmpty()) {
-                        //  Удаляем слоты на данную дату для данной нефтебазы
-                        slotRepository.deleteSlotsByStoreIdAndDate(storeId, genDate);
-                        // генерим слоты на основе шаблона
-                        for (SlotTemplate template : templates) {
-                            Slot slot = new Slot();
-                            slot.setNLoadingPointId(template.getNLoadingPointId());
-                            slot.setDDate(genDate);
-                            slot.setDStartTime(template.getDStartTime());
-                            slot.setDEndTime(template.getDEndTime());
-                            slot.setNStatusId(template.getNStatusId());
-                            slots.add(slot);
-                        }
-                        messages.add("Для нефтебазы: " + storeCode + " на дату: " + genDate + " слоты добавлены");
-                    } else {
-                        messages.add("Для нефтебазы: " + storeCode + " на дату: " + genDate + " есть резервированные слоты. " +
-                                " Слоты не добавлены");
-                    }
+            Optional<VStore> optionalStore = vStoreRepository.findById(storeId);
+            if (optionalStore.isEmpty()) {
+                messages.add("Нефтебаза с ID " + storeId + " не найдена.");
+                continue;
+            }
+
+            String storeCode = optionalStore.get().getVcCode();
+            List<SlotTemplate> templates = slotTemplateRepository.findAllByStoreId(storeId);
+
+            for (LocalDate genDate = dateBegin; !genDate.isAfter(dateEnd); genDate = genDate.plusDays(1)) {
+                boolean hasReservedSlots = !slotRepository.findReservedSlotsByStoreIdAndDate(storeId, genDate).isEmpty();
+
+                if (hasReservedSlots) {
+                    messages.add("Для нефтебазы: " + storeCode + " на дату: " + genDate +
+                            " есть резервированные слоты. Слоты не добавлены.");
+                    continue;
                 }
+
+                slotRepository.deleteSlotsByStoreIdAndDate(storeId, genDate);
+
+                for (SlotTemplate template : templates) {
+                    Slot slot = new Slot();
+                    slot.setNLoadingPointId(template.getNLoadingPointId());
+                    slot.setDDate(genDate);
+                    slot.setDStartTime(template.getDStartTime());
+                    slot.setDEndTime(template.getDEndTime());
+                    slot.setNStatusId(template.getNStatusId());
+                    slotsToSave.add(slot);
+                }
+
+                messages.add("Для нефтебазы: " + storeCode + " на дату: " + genDate + " слоты добавлены.");
             }
         }
-        slotRepository.saveAll(slots);
+
+        if (!slotsToSave.isEmpty()) {
+            slotRepository.saveAll(slotsToSave);
+        }
+
         return ResponseEntity.ok(messages);
     }
 
@@ -226,7 +220,6 @@ public class SlotApiService implements SlotsApiDelegate {
 
     }
 
-
     /**
      * PATCH /slots/reserve : Резервирование слотов
      *
@@ -234,18 +227,48 @@ public class SlotApiService implements SlotsApiDelegate {
      * @return Пустой ответ (status code 200)
      */
     @Override
-    public ResponseEntity<Void> reserveSlots(List<@Valid ModifiedSlotDto> modifiedSlotDtos) {
+    public ResponseEntity<List<String>> reserveSlots(List<@Valid ModifiedSlotDto> modifiedSlotDtos) {
+        final Long STATUS_RESERVED = 2L;
+        List<String> messages = new ArrayList<>();
 
-        for (ModifiedSlotDto slot : modifiedSlotDtos) {
-            if (slotRepository.findById(slot.getnSlotId()).isPresent()) {
-                Slot modifiedSlot = slotRepository.findById(slot.getnSlotId()).get();
-                modifiedSlot.setNStatusId(2L);
-                modifiedSlot.setNClientId(slot.getnClientId());
-                slotRepository.save(modifiedSlot);
+        for (ModifiedSlotDto slotDto : modifiedSlotDtos) {
+            Long slotId = slotDto.getnSlotId();
+            Long clientId = slotDto.getnClientId();
+
+            Optional<Slot> optionalSlot = slotRepository.findById(slotId);
+            Optional<VClient> optionalClient = vClientRepository.findById(clientId);
+
+            if (optionalSlot.isEmpty()) {
+                messages.add("Слот с ID " + slotId + " не найден.");
+                continue;
             }
-        }
-        return ResponseEntity.noContent().build();
 
+            if (optionalClient.isEmpty()) {
+                messages.add("Клиент с ID " + clientId + " не найден.");
+                continue;
+            }
+
+            Slot slot = optionalSlot.get();
+            slot.setNStatusId(STATUS_RESERVED);
+            slot.setNClientId(clientId);
+            slotRepository.save(slot);
+
+            vSlotRepository.findById(slotId).ifPresentOrElse(
+                    vSlot -> messages.add("Зарезервирован слот: " +
+                            vSlot.getVcStoreCode() + " - " +
+                            vSlot.getDDate() + " - " +
+                            vSlot.getDStartTime() + " - " +
+                            vSlot.getDEndTime() + " - " +
+                            vSlot.getVcClientCode()),
+                    () -> messages.add("Информация о слоте с ID " + slotId + " не найдена в представлении.")
+            );
+        }
+
+        if (messages.isEmpty()) {
+            messages.add("Слоты не зарезервированы.");
+        }
+
+        return ResponseEntity.ok(messages);
     }
 
     /**
@@ -255,18 +278,38 @@ public class SlotApiService implements SlotsApiDelegate {
      * @return Пустой ответ (status code 200)
      */
     @Override
-    public ResponseEntity<Void> freeSlots(List<@Valid ModifiedSlotDto> modifiedSlotDtos) {
+    public ResponseEntity<List<String>> freeSlots(List<@Valid ModifiedSlotDto> modifiedSlotDtos) {
+        final Long STATUS_FREE = 1L;
+        List<String> messages = new ArrayList<>();
 
-        for (ModifiedSlotDto slot : modifiedSlotDtos) {
-            if (slotRepository.findById(slot.getnSlotId()).isPresent()) {
-                Slot modifiedSlot = slotRepository.findById(slot.getnSlotId()).get();
-                modifiedSlot.setNStatusId(1L);
-                modifiedSlot.setNClientId(slot.getnClientId());
-                slotRepository.save(modifiedSlot);
+        for (ModifiedSlotDto slotDto : modifiedSlotDtos) {
+            Long slotId = slotDto.getnSlotId();
+
+            Optional<Slot> optionalSlot = slotRepository.findById(slotId);
+            if (optionalSlot.isEmpty()) {
+                messages.add("Слот с ID " + slotId + " не найден.");
+                continue;
             }
+
+            Slot slot = optionalSlot.get();
+            slot.setNStatusId(STATUS_FREE);
+            slot.setNClientId(null);
+            slotRepository.save(slot);
+
+            vSlotRepository.findById(slotId).ifPresentOrElse(
+                    vSlot -> messages.add("Снят с резерва слот: " +
+                            vSlot.getVcStoreCode() + " - " +
+                            vSlot.getDDate() + " - " +
+                            vSlot.getDStartTime() + " - " +
+                            vSlot.getDEndTime()),
+                    () -> messages.add("Информация о слоте с ID " + slotId + " не найдена.")
+            );
         }
-        return ResponseEntity.noContent().build();
 
+        if (messages.isEmpty()) {
+            messages.add("Слоты не зарезервированы.");
+        }
+
+        return ResponseEntity.ok(messages);
     }
-
 }

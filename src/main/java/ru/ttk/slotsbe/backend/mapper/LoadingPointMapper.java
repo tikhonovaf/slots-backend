@@ -2,7 +2,6 @@ package ru.ttk.slotsbe.backend.mapper;
 
 import org.springframework.stereotype.Service;
 import ru.ttk.slotsbe.backend.dto.*;
-import ru.ttk.slotsbe.backend.model.VClient;
 import ru.ttk.slotsbe.backend.model.VLoadingPoint;
 import ru.ttk.slotsbe.backend.util.CoreUtil;
 

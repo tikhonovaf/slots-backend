@@ -1,5 +1,6 @@
 package ru.ttk.slotsbe.backend.service;//package ru.ttk.slotsbe.backend.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,13 +20,11 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class StoreApiService implements StoresApiDelegate {
 
-    @Autowired
-    private VStoreRepository vStoreRepository;
-
-    @Autowired
-    private StoreMapper storeMapper;
+    private final VStoreRepository vStoreRepository;
+    private final StoreMapper storeMapper;
 
     /**
      * Список нефтебаз

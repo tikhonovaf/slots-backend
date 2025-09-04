@@ -35,16 +35,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SlotApiService implements SlotsApiDelegate {
 
-    private  final VSlotRepository vSlotRepository;
-    private  final VStoreRepository vStoreRepository;
-    private  final SlotTemplateRepository slotTemplateRepository;
-    private  final SlotRepository slotRepository;
-    private  final SlotMapper slotMapper;
-    private  final ClientUserRepository clientUserRepository;
-    private  final VClientRepository vClientRepository;
-    private  final EmailService emailService;
-    private  final ExcelUploadService excelUploadService;
-    private  final SlotStatusRepository slotStatusRepository;
+    private final VSlotRepository vSlotRepository;
+    private final VStoreRepository vStoreRepository;
+    private final SlotTemplateRepository slotTemplateRepository;
+    private final SlotRepository slotRepository;
+    private final SlotMapper slotMapper;
+    private final ClientUserRepository clientUserRepository;
+    private final VClientRepository vClientRepository;
+    private final EmailService emailService;
+    private final ExcelUploadService excelUploadService;
+    private final SlotStatusRepository slotStatusRepository;
 
     /**
      * Список слотов
@@ -223,7 +223,7 @@ public class SlotApiService implements SlotsApiDelegate {
     /**
      * PATCH /slots/reserve : Резервирование слотов
      *
-     * @param modifiedSlotDtos  (optional)
+     * @param modifiedSlotDtos (optional)
      * @return Пустой ответ (status code 200)
      */
     @Override
@@ -253,15 +253,14 @@ public class SlotApiService implements SlotsApiDelegate {
             slot.setNClientId(clientId);
             slotRepository.save(slot);
 
-            vSlotRepository.findById(slotId).ifPresentOrElse(
-                    vSlot -> messages.add("Зарезервирован слот: " +
-                            vSlot.getVcStoreCode() + " - " +
-                            vSlot.getDDate() + " - " +
-                            vSlot.getDStartTime() + " - " +
-                            vSlot.getDEndTime() + " - " +
-                            vSlot.getVcClientCode()),
-                    () -> messages.add("Информация о слоте с ID " + slotId + " не найдена в представлении.")
-            );
+            vSlotRepository.findById(slotId).ifPresent(vSlot -> {
+                messages.add(String.format("Зарезервирован слот: %s - %s - %s - %s - %s",
+                        vSlot.getVcStoreCode(),
+                        vSlot.getDDate(),
+                        vSlot.getDStartTime(),
+                        vSlot.getDEndTime(),
+                        vSlot.getVcClientCode()));
+            });
         }
 
         if (messages.isEmpty()) {
@@ -274,7 +273,7 @@ public class SlotApiService implements SlotsApiDelegate {
     /**
      * PATCH /slots/free : Снятие слотов с резерва
      *
-     * @param modifiedSlotDtos  (optional)
+     * @param modifiedSlotDtos (optional)
      * @return Пустой ответ (status code 200)
      */
     @Override
@@ -296,14 +295,14 @@ public class SlotApiService implements SlotsApiDelegate {
             slot.setNClientId(null);
             slotRepository.save(slot);
 
-            vSlotRepository.findById(slotId).ifPresentOrElse(
-                    vSlot -> messages.add("Снят с резерва слот: " +
-                            vSlot.getVcStoreCode() + " - " +
-                            vSlot.getDDate() + " - " +
-                            vSlot.getDStartTime() + " - " +
-                            vSlot.getDEndTime()),
-                    () -> messages.add("Информация о слоте с ID " + slotId + " не найдена.")
-            );
+            vSlotRepository.findById(slotId).ifPresent(vSlot -> {
+                String message = String.format("Снят с резерва слот: %s - %s - %s - %s",
+                        vSlot.getVcStoreCode(),
+                        vSlot.getDDate(),
+                        vSlot.getDStartTime(),
+                        vSlot.getDEndTime());
+                messages.add(message);
+            });
         }
 
         if (messages.isEmpty()) {

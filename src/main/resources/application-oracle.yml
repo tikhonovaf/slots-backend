@@ -9,9 +9,7 @@ logging:
             CommonsRequestLoggingFilter: INFO
     root: INFO
 slotsbe:
-  decodeDate: ${DECODE_DATA:FALSE}
   timeZone: ${TIME_ZONE:Europe/Moscow}
-
 server:
   port: 8081
   servlet:
@@ -31,14 +29,11 @@ spring:
       max-page-size: 10000
       returnBodyOnCreate: true
       returnBodyOnUpdate: true
-  #  sql:
-  #    init:
-  #      mode: always
   datasource:
-    url: jdbc:oracle:thin:@//localhost:1521/XEPDB1
-    username: SLOTUSER
-    password: SLOTUSER
-    driver-class-name: oracle.jdbc.OracleDriver
+    url: ${DB_URL:jdbc:oracle:thin:@//localhost:1521/XEPDB1}
+    username: ${DB_USERNAME:SLOTUSER}
+    password: ${DB_PASSWORD:SLOTUSER}
+    driver-class-name: ${DB_DRIVER:oracle.jdbc.OracleDriver}
   jpa:
     hibernate:
       ddl-auto: none
@@ -52,10 +47,6 @@ spring:
         order_inserts: true
         order_updates: true
     show-sql: true
-  h2:
-    console:
-      enabled:true
-      path:/h2-console
   mvc:
     pathmatch:
       matching-strategy: ant-path-matcher
@@ -64,10 +55,10 @@ spring:
       max-file-size: 150MB
       max-request-size: 150MB
   mail:
-    host: smtp.yandex.ru
-    port: 465
-    username: tikhonovafZel@yandex.ru
-    password: lrvbtcwgqqmfupgp
+    host: ${MAIL_HOST:smtp.yandex.ru}
+    port: ${MAIL_PORT:465}
+    username: ${MAIL_USERNAME:tikhonovafZel@yandex.ru}
+    password: ${MAIL_PASSWORD:lrvbtcwgqqmfupgp}
     protocol: smtp
     properties:
       mail:

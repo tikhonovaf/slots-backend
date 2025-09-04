@@ -5,7 +5,6 @@ import ru.ttk.slotsbe.backend.dto.ClientDto;
 import ru.ttk.slotsbe.backend.dto.ClientUsersDto;
 import ru.ttk.slotsbe.backend.model.VClient;
 import ru.ttk.slotsbe.backend.model.VClientUser;
-import ru.ttk.slotsbe.backend.model.VSlot;
 import ru.ttk.slotsbe.backend.util.CoreUtil;
 
 /**

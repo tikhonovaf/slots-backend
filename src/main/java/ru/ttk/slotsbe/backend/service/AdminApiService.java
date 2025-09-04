@@ -26,40 +26,30 @@ public class AdminApiService implements AdminApiDelegate {
     private final Sha512PasswordEncoder sha512PasswordEncoder;
 
     @Override
-    public ResponseEntity<Void> addClientUser(ClientUserInDto clientUserInDto) {
-        if (clientUserRepository.findByVcLogin(clientUserInDto.getVcLogin()).isPresent()) {
-            throw ValidateException.exceptionSimple("There is a user with this login");
-        }
+    public ResponseEntity<Void> addClientUser(ClientUserInDto dto) {
+        validateUniqueLogin(dto.getVcLogin(), null);
 
-        ClientUser clientUser = clientUserMapper.fromDtoToEntity(clientUserInDto);
-        if (clientUserInDto.getVcPassword() != null) {
-            clientUser.setVcPassword(sha512PasswordEncoder.encode(clientUserInDto.getVcPassword()));
-        }
+        ClientUser clientUser = clientUserMapper.fromDtoToEntity(dto);
+        encodePasswordIfPresent(dto.getVcPassword(), clientUser);
 
         clientUserRepository.save(clientUser);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(201).build(); // Явно указываем статус создания
     }
 
     @Override
-    public ResponseEntity<Void> modifyClientUser(Long id, ClientUserInDto clientUserInDto) {
-        Optional<ClientUser> existingUserOpt = clientUserRepository.findById(id);
-        if (existingUserOpt.isEmpty()) {
+    public ResponseEntity<Void> modifyClientUser(Long id, ClientUserInDto dto) {
+        ClientUser existingUser = clientUserRepository.findById(id)
+                .orElse(null);
+
+        if (existingUser == null) {
             return ResponseEntity.notFound().build();
         }
 
-        ClientUser existingUser = existingUserOpt.get();
+        validateUniqueLogin(dto.getVcLogin(), id);
 
-        Optional<ClientUser> userWithSameLogin = clientUserRepository.findByVcLogin(clientUserInDto.getVcLogin());
-        if (userWithSameLogin.isPresent() && !userWithSameLogin.get().getNUserId().equals(id)) {
-            throw ValidateException.exceptionSimple("There is a user with this login");
-        }
-
-        ClientUser updatedUser = clientUserMapper.fromDtoToEntity(clientUserInDto);
+        ClientUser updatedUser = clientUserMapper.fromDtoToEntity(dto);
         CoreUtil.patch(updatedUser, existingUser);
-
-        if (clientUserInDto.getVcPassword() != null) {
-            existingUser.setVcPassword(sha512PasswordEncoder.encode(clientUserInDto.getVcPassword()));
-        }
+        encodePasswordIfPresent(dto.getVcPassword(), existingUser);
 
         clientUserRepository.save(existingUser);
         return ResponseEntity.noContent().build();
@@ -69,5 +59,21 @@ public class AdminApiService implements AdminApiDelegate {
     public ResponseEntity<List<String>> clientUsersUpload(MultipartFile file) {
         List<String> messages = excelUploadService.saveClientUsersFromExcel(file);
         return ResponseEntity.ok(messages);
+    }
+
+    // 🔒 Проверка уникальности логина
+    private void validateUniqueLogin(String login, Long currentUserId) {
+        clientUserRepository.findByVcLogin(login).ifPresent(existing -> {
+            if (currentUserId == null || !existing.getNUserId().equals(currentUserId)) {
+                throw ValidateException.exceptionSimple("There is a user with this login");
+            }
+        });
+    }
+
+    // 🔐 Хеширование пароля
+    private void encodePasswordIfPresent(String rawPassword, ClientUser user) {
+        if (rawPassword != null && !rawPassword.isBlank()) {
+            user.setVcPassword(sha512PasswordEncoder.encode(rawPassword));
+        }
     }
 }

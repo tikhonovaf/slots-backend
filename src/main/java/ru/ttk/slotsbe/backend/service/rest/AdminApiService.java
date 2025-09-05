@@ -1,20 +1,21 @@
-package ru.ttk.slotsbe.backend.service;
+package ru.ttk.slotsbe.backend.service.rest;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import ru.ttk.slotsbe.backend.api.*;
-import ru.ttk.slotsbe.backend.dto.*;
+import ru.ttk.slotsbe.backend.api.AdminApiDelegate;
+import ru.ttk.slotsbe.backend.dto.ClientUserInDto;
 import ru.ttk.slotsbe.backend.exception.ValidateException;
 import ru.ttk.slotsbe.backend.mapper.ClientUserMapper;
 import ru.ttk.slotsbe.backend.model.ClientUser;
 import ru.ttk.slotsbe.backend.repository.ClientUserRepository;
 import ru.ttk.slotsbe.backend.security.Sha512PasswordEncoder;
+import ru.ttk.slotsbe.backend.service.excel.ExcelUploadService;
 import ru.ttk.slotsbe.backend.util.CoreUtil;
 
+import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -56,8 +57,13 @@ public class AdminApiService implements AdminApiDelegate {
     }
 
     @Override
-    public ResponseEntity<List<String>> clientUsersUpload(MultipartFile file) {
-        List<String> messages = excelUploadService.saveClientUsersFromExcel(file);
+    public ResponseEntity<List<String>> clientUsersUpload(MultipartFile file)  {
+        List<String> messages = null;
+        try {
+            messages = excelUploadService.saveClientUsersFromExcel(file.getInputStream());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         return ResponseEntity.ok(messages);
     }
 

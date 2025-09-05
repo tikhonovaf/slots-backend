@@ -1,4 +1,4 @@
-package ru.ttk.slotsbe.backend.service;
+package ru.ttk.slotsbe.backend.util;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,6 +10,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
+import ru.ttk.slotsbe.backend.service.rest.UserService;
+
 import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

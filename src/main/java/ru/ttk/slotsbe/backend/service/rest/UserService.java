@@ -1,7 +1,6 @@
-package ru.ttk.slotsbe.backend.service;
+package ru.ttk.slotsbe.backend.service.rest;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;

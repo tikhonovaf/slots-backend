@@ -1,15 +1,17 @@
-package ru.ttk.slotsbe.backend.service;
+package ru.ttk.slotsbe.backend.service.rest;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import ru.ttk.slotsbe.backend.api.*;
-import ru.ttk.slotsbe.backend.dto.*;
+import ru.ttk.slotsbe.backend.api.LoadingPointsApiDelegate;
+import ru.ttk.slotsbe.backend.dto.LoadingPointDto;
 import ru.ttk.slotsbe.backend.mapper.LoadingPointMapper;
 import ru.ttk.slotsbe.backend.repository.VLoadingPointRepository;
+import ru.ttk.slotsbe.backend.service.excel.ExcelUploadService;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -62,8 +64,13 @@ public class LoadingPointApiService implements LoadingPointsApiDelegate {
      * @return Список сообщений о загрузке (status code 200)
      */
     @Override
-    public  ResponseEntity<List<String>> loadingPointsUpload(MultipartFile file) {
-        List<String> messages = excelUploadService.saveLoadingPointsFromExcel(file);
+    public  ResponseEntity<List<String>> loadingPointsUpload(MultipartFile file)  {
+        List<String> messages = null;
+        try {
+            messages = excelUploadService.saveLoadingPointsFromExcel(file.getInputStream());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         return ResponseEntity.ok(messages);
 
     }

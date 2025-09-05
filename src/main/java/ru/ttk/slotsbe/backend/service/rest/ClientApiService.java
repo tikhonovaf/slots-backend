@@ -1,14 +1,14 @@
-package ru.ttk.slotsbe.backend.service;//package ru.ttk.slotsbe.backend.service;
+package ru.ttk.slotsbe.backend.service.rest;//package ru.ttk.slotsbe.backend.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import ru.ttk.slotsbe.backend.api.ClientsApiDelegate;
+import ru.ttk.slotsbe.backend.dto.ClientDto;
+import ru.ttk.slotsbe.backend.dto.ClientUsersDto;
 import ru.ttk.slotsbe.backend.mapper.ClientMapper;
 import ru.ttk.slotsbe.backend.repository.VClientRepository;
-import ru.ttk.slotsbe.backend.api.*;
-import ru.ttk.slotsbe.backend.dto.*;
 import ru.ttk.slotsbe.backend.repository.VClientUserRepository;
 
 import java.util.List;

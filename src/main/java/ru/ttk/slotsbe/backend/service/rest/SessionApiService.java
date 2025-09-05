@@ -1,4 +1,4 @@
-package ru.ttk.slotsbe.backend.service;
+package ru.ttk.slotsbe.backend.service.rest;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

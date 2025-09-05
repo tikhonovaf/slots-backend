@@ -1,26 +1,27 @@
-package ru.ttk.slotsbe.backend.service;
+package ru.ttk.slotsbe.backend.service.email;
 import jakarta.mail.Address;
-import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class EmailService {
+public class ClientUsersEmailSendService {
+    @Value("${mail.smtp.from}")
+    private String from;
 
     private final JavaMailSender mailSender;
 
-    public String sendEmailWithExcelAttachment(
+    public String sendEmailToClientUserWithExcelAttachment(
             String toEmail,
             String subject,
             String body,
@@ -34,7 +35,7 @@ public class EmailService {
         helper.setTo(toEmail);
         helper.setSubject(subject);
         helper.setText(body);
-        helper.setFrom("tikhonovafZel@yandex.ru"); // обязательно!
+        helper.setFrom(from);
 
         // Добавляем вложение
         helper.addAttachment(fileName, new ByteArrayResource(excelData));

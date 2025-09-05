@@ -150,6 +150,40 @@ paths:
               schema:
                 $ref: "#/components/schemas/uploadMessages"
 
+  /slots/reserve/upload/{clientUserId}:
+    post:
+      tags:
+        - SLOT
+      operationId: slotsReserveUpload
+      summary: Загрузка файла с запросом от пользователя клиента (для отладки)
+      parameters:
+        - name: clientUserId
+          description: ИД пользователя
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Файл для загрузки
+      responses:
+        200:
+          description: Excel файл
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+
   /slots/:
     post:
       summary: формирование слотов на основе шаблона

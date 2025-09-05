@@ -11,7 +11,6 @@ logging:
             CommonsRequestLoggingFilter: INFO
     root: INFO
 slotsbe:
-  decodeDate: ${DECODE_DATA:FALSE}
   timeZone: ${TIME_ZONE:Europe/Moscow}
 
 server:
@@ -65,11 +64,13 @@ spring:
     multipart:
       max-file-size: 150MB
       max-request-size: 150MB
-  mail:
-    host: smtp.yandex.ru
-    port: 465
-    username: tikhonovafZel@yandex.ru
-    password: lrvbtcwgqqmfupgp
+mail:
+  smtp:
+    host: ${MAIL_SMTP_HOST:smtp.yandex.ru}
+    port: ${MAIL_SMTP_PORT:465}
+    username: ${MAIL_SMTP_USERNAME:tikhonovafZel@yandex.ru}
+    password: ${MAIL_SMTP_PASSWORD:lrvbtcwgqqmfupgp}
+    from: ${MAIL_SMTP_FROM:tikhonovafZel@yandex.ru}
     protocol: smtp
     properties:
       mail:
@@ -82,6 +83,38 @@ spring:
           connectiontimeout: 5000
           timeout: 5000
           writetimeout: 5000
+
+  imap:
+    host: ${MAIL_IMAP_HOST:imap.yandex.ru}
+    port: ${MAIL_IMAP_PORT:993}
+    username: ${MAIL_IMAP_USERNAME:tikhonovafZel@yandex.ru}
+    password: ${MAIL_IMAP_PASSWORD:lrvbtcwgqqmfupgp}
+    protocol: imap
+    properties:
+      mail:
+        store:
+          protocol: imap
+        imap:
+          ssl:
+            enable: true
+
+#  mail:
+#    host: smtp.yandex.ru
+#    port: 465
+#    username: tikhonovafZel@yandex.ru
+#    password: lrvbtcwgqqmfupgp
+#    protocol: smtp
+#    properties:
+#      mail:
+#        smtp:
+#          auth: true
+#          ssl:
+#            enable: true
+#            starttls:
+#              enable: true
+#          connectiontimeout: 5000
+#          timeout: 5000
+#          writetimeout: 5000
 springdoc:
   swagger-ui:
     urls:

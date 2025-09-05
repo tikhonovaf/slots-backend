@@ -1,18 +1,19 @@
-package ru.ttk.slotsbe.backend.service;
+package ru.ttk.slotsbe.backend.service.excel;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import ru.ttk.slotsbe.backend.exception.ValidateException;
 import ru.ttk.slotsbe.backend.model.*;
 import ru.ttk.slotsbe.backend.repository.*;
 import ru.ttk.slotsbe.backend.security.Sha512PasswordEncoder;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -22,6 +23,7 @@ import java.util.*;
 @Slf4j
 public class ExcelUploadService {
 
+    private final SlotRepository slotRepository;
     private final SlotTemplateRepository slotTemplateRepository;
     private final VLoadingPointRepository vLoadingPointRepository;
     private final SlotStatusRepository slotStatusRepository;
@@ -31,20 +33,21 @@ public class ExcelUploadService {
     private final ClientUserRepository clientUserRepository;
     private final Sha512PasswordEncoder sha512PasswordEncoder;
 
-    public List<String> saveSlotTemplatesFromExcel(MultipartFile file) {
+    public static final Long RESERVED = 2L;
+
+    public List<String> saveSlotTemplatesFromExcel(InputStream is) {
         List<String> result = new ArrayList<>();
         Set<Long> storeIdsToDelete = new HashSet<>();
         List<SlotTemplate> templates = new ArrayList<>();
 
-        try (InputStream is = file.getInputStream();
-             Workbook workbook = new XSSFWorkbook(is)) {
+        try (Workbook workbook = new XSSFWorkbook(is)) {
 
             Sheet sheet = workbook.getSheetAt(0);
 
             for (Row row : sheet) {
                 if (row.getRowNum() == 0 || isRowEmpty(row)) continue;
 
-                Optional<SlotTemplate> optionalTemplate = parseRow(row, result, storeIdsToDelete);
+                Optional<SlotTemplate> optionalTemplate = parseSlotTemplateRow(row, result, storeIdsToDelete);
                 optionalTemplate.ifPresent(templates::add);
             }
 
@@ -66,7 +69,7 @@ public class ExcelUploadService {
     }
 
 
-    private Optional<SlotTemplate> parseRow(Row row, List<String> result, Set<Long> storeIdsToDelete) {
+    private Optional<SlotTemplate> parseSlotTemplateRow(Row row, List<String> result, Set<Long> storeIdsToDelete) {
         SlotTemplate template = new SlotTemplate();
 
         String storeCode = getCellStringValue(row.getCell(0));
@@ -106,24 +109,6 @@ public class ExcelUploadService {
         return Optional.of(template);
     }
 
-    private String getCellStringValue(Cell cell) {
-        if (cell == null) return "";
-        return switch (cell.getCellType()) {
-            case STRING -> cell.getStringCellValue().trim();
-            case NUMERIC -> String.valueOf((int) cell.getNumericCellValue());
-            default -> "";
-        };
-    }
-
-    private LocalTime getTimeFromCell(Cell cell, String label, int rowNum, List<String> result) {
-        if (cell == null || !DateUtil.isCellDateFormatted(cell)) {
-            result.add("Строка " + (rowNum + 1) + ": " + label + " - неверный формат.");
-            return null;
-        }
-        Date date = cell.getDateCellValue();
-        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalTime();
-    }
-
     private Long getStatusId(Cell cell, int rowNum, List<String> result) {
         if (cell == null || cell.getCellType() != CellType.STRING) return 1L;
 
@@ -136,21 +121,12 @@ public class ExcelUploadService {
                 });
     }
 
-    private boolean isRowEmpty(Row row) {
-        for (int i = 0; i < 5; i++) {
-            Cell cell = row.getCell(i);
-            if (cell != null && cell.getCellType() != CellType.BLANK) return false;
-        }
-        return true;
-    }
-
-    public List<String> saveLoadingPointsFromExcel(MultipartFile file) {
+    public List<String> saveLoadingPointsFromExcel(InputStream is) {
         List<String> result = new ArrayList<>();
         Set<Long> storeIdsToDelete = new HashSet<>();
         List<LoadingPoint> loadingPoints = new ArrayList<>();
 
-        try (InputStream is = file.getInputStream();
-             Workbook workbook = new XSSFWorkbook(is)) {
+        try (Workbook workbook = new XSSFWorkbook(is)) {
 
             Sheet sheet = workbook.getSheetAt(0);
 
@@ -205,13 +181,12 @@ public class ExcelUploadService {
     }
 
 
-    public List<String> saveClientUsersFromExcel(MultipartFile file) {
+    public List<String> saveClientUsersFromExcel(InputStream is) {
         List<String> result = new ArrayList<>();
         Set<Long> clientIdsToDelete = new HashSet<>();
         List<ClientUser> clientUsers = new ArrayList<>();
 
-        try (InputStream is = file.getInputStream();
-             Workbook workbook = new XSSFWorkbook(is)) {
+        try (Workbook workbook = new XSSFWorkbook(is)) {
 
             Sheet sheet = workbook.getSheetAt(0);
 
@@ -285,6 +260,138 @@ public class ExcelUploadService {
         return Optional.of(clientUser);
     }
 
+    public byte[] processClientReserveFromExcel(InputStream inputStream) {
+        try (Workbook workbook = new XSSFWorkbook(inputStream);
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
+            CreationHelper creationHelper = workbook.getCreationHelper();
+            short timeFormat = creationHelper.createDataFormat().getFormat("HH:mm");
+
+            CellStyle styleReserved = workbook.createCellStyle();
+            styleReserved.setFillForegroundColor(IndexedColors.ROSE.getIndex());
+            styleReserved.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            styleReserved.setDataFormat(timeFormat);
+
+            CellStyle styleFree = workbook.createCellStyle();
+            styleFree.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
+            styleFree.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            styleFree.setDataFormat(timeFormat);
+
+            Sheet sheet = workbook.getSheetAt(0);
+            int processedRows = 0;
+
+            for (Row row : sheet) {
+                if (row.getRowNum() == 0 || isRowEmpty(row)) continue;
+                parseClientReserveRow(row, styleReserved, styleFree);
+                processedRows++;
+            }
+
+            log.info("Обработано {} строк в листе '{}'", processedRows, sheet.getSheetName());
+
+            workbook.write(out);
+            return out.toByteArray();
+
+        } catch (IOException e) {
+            log.error("Ошибка при чтении Excel-файла", e);
+            throw new RuntimeException("Ошибка при чтении Excel-файла", e);
+        } catch (Exception e) {
+            log.error("Ошибка при обработке Excel-файла", e);
+            throw new RuntimeException("Ошибка при обработке Excel-файла", e);
+        }
+    }
+
+    private void parseClientReserveRow(Row row, CellStyle styleReserved, CellStyle styleFree) {
+        List<String> result = new ArrayList<>();
+
+        String storeCode = getCellStringValue(row.getCell(0));
+        String loadingPointCode = getCellStringValue(row.getCell(1));
+
+        if (storeCode.isEmpty()) {
+            result.add("Строка " + (row.getRowNum() + 1) + ": не задан код нефтебазы.");
+        }
+        if (loadingPointCode.isEmpty()) {
+            result.add("Строка " + (row.getRowNum() + 1) + ": не задан код пункта налива.");
+        }
+
+        Long loadingPointId = null;
+        List<VLoadingPoint> vLoadingPoints = vLoadingPointRepository
+                .findAllByStoreCodeAndLoadingPointCode(storeCode, loadingPointCode);
+        if (vLoadingPoints.isEmpty()) {
+            result.add("Строка " + (row.getRowNum() + 1) + ": не найдена запись для код нефтебазы = " +
+                    storeCode + ", код пункта налива = " + loadingPointCode);
+        } else {
+            loadingPointId = vLoadingPoints.get(0).getNLoadingPointId();
+        }
+
+        LocalDate slotDate = getDateFromCell(row.getCell(2), "Дата слота", row.getRowNum(), result);
+        LocalTime[] times = {
+                getTimeFromCell(row.getCell(3), "Время начала слота 1", row.getRowNum(), result),
+                getTimeFromCell(row.getCell(4), "Время начала слота 2", row.getRowNum(), result),
+                getTimeFromCell(row.getCell(5), "Время начала слота 3", row.getRowNum(), result)
+        };
+
+        boolean slotFound = false;
+
+        for (int i = 0; i < times.length; i++) {
+            Cell cell = row.getCell(3 + i);
+            List<Slot> slots = slotRepository.findAllFreeSlots(loadingPointId, slotDate, times[i]);
+
+            if (slots.isEmpty()) {
+                cell.setCellStyle(styleReserved);
+            } else {
+                cell.setCellStyle(styleFree);
+                if (!slotFound) {
+                    Slot slot = slots.get(0);
+                    slot.setNStatusId(RESERVED);
+                    slotRepository.save(slot);
+                    slotFound = true;
+                }
+            }
+        }
+
+        if (!slotFound) {
+            result.add("Не найдены свободные слоты");
+        }
+
+        if (!result.isEmpty()) {
+            Cell commentCell = row.createCell(6);
+            commentCell.setCellValue(String.join("; ", result));
+        }
+    }
+
+    private String getCellStringValue(Cell cell) {
+        if (cell == null) return "";
+        return switch (cell.getCellType()) {
+            case STRING -> cell.getStringCellValue().trim();
+            case NUMERIC -> String.valueOf((int) cell.getNumericCellValue());
+            default -> "";
+        };
+    }
+
+    private LocalDate getDateFromCell(Cell cell, String label, int rowNum, List<String> result) {
+        if (cell == null || !DateUtil.isCellDateFormatted(cell)) {
+            result.add("Строка " + (rowNum + 1) + ": " + label + " - неверный формат.");
+            return null;
+        }
+        Date date = cell.getDateCellValue();
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    }
+
+    private LocalTime getTimeFromCell(Cell cell, String label, int rowNum, List<String> result) {
+        if (cell == null || !DateUtil.isCellDateFormatted(cell)) {
+            result.add("Строка " + (rowNum + 1) + ": " + label + " - неверный формат.");
+            return null;
+        }
+        Date date = cell.getDateCellValue();
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalTime();
+    }
+
+    private boolean isRowEmpty(Row row) {
+        for (int i = 0; i < 5; i++) {
+            Cell cell = row.getCell(i);
+            if (cell != null && cell.getCellType() != CellType.BLANK) return false;
+        }
+        return true;
+    }
 
 }

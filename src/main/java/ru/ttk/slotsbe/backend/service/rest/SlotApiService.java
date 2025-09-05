@@ -1,13 +1,13 @@
-package ru.ttk.slotsbe.backend.service;//package ru.ttk.slotsbe.backend.service;
+package ru.ttk.slotsbe.backend.service.rest;//package ru.ttk.slotsbe.backend.service;
 
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -17,8 +17,11 @@ import ru.ttk.slotsbe.backend.mapper.SlotMapper;
 import ru.ttk.slotsbe.backend.model.*;
 import ru.ttk.slotsbe.backend.repository.*;
 import ru.ttk.slotsbe.backend.api.*;
-import ru.ttk.slotsbe.backend.util.ExcelReportGenerator;
+import ru.ttk.slotsbe.backend.service.email.ClientUsersEmailSendService;
+import ru.ttk.slotsbe.backend.service.excel.ExcelGenerator;
+import ru.ttk.slotsbe.backend.service.excel.ExcelUploadService;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +45,7 @@ public class SlotApiService implements SlotsApiDelegate {
     private final SlotMapper slotMapper;
     private final ClientUserRepository clientUserRepository;
     private final VClientRepository vClientRepository;
-    private final EmailService emailService;
+    private final ClientUsersEmailSendService emailService;
     private final ExcelUploadService excelUploadService;
     private final SlotStatusRepository slotStatusRepository;
 
@@ -81,7 +84,7 @@ public class SlotApiService implements SlotsApiDelegate {
         // Генерируем Excel в памяти
         byte[] excelBytes = null;
         try {
-            excelBytes = ExcelReportGenerator.generateExcel(slots);
+            excelBytes = ExcelGenerator.generateExcelSlots(slots);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -115,14 +118,14 @@ public class SlotApiService implements SlotsApiDelegate {
             // Генерируем Excel в памяти
             byte[] excelBytes = null;
             try {
-                excelBytes = ExcelReportGenerator.generateExcel(slots);
+                excelBytes = ExcelGenerator.generateExcelSlots(slots);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
 
             // 3. Отправляем email с вложением
             try {
-                String result = emailService.sendEmailWithExcelAttachment(
+                String result = emailService.sendEmailToClientUserWithExcelAttachment(
                         emailTo,
                         "Customer Report",
                         "Please find attached the customer report.",
@@ -143,8 +146,13 @@ public class SlotApiService implements SlotsApiDelegate {
      * @param file Файл для загрузки (optional)
      * @return Пустой ответ (status code 200)
      */
-    public ResponseEntity<List<String>> slotsTemplateUpload(MultipartFile file) {//    @Override
-        List<String> messages = excelUploadService.saveSlotTemplatesFromExcel(file);
+    public ResponseEntity<List<String>> slotsTemplateUpload(MultipartFile file)  {//    @Override
+        List<String> messages = null;
+        try {
+            messages = excelUploadService.saveSlotTemplatesFromExcel(file.getInputStream());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         return ResponseEntity.ok(messages);
     }
 
@@ -311,4 +319,33 @@ public class SlotApiService implements SlotsApiDelegate {
 
         return ResponseEntity.ok(messages);
     }
+
+    /**
+     * POST /slots/reserve/upload : Загрузка файла с запросом от пользователя клиента (для отладки)
+     *
+     * @param id ИД пользователя (required)
+     * @param file Файл для загрузки (optional)
+     * @return Список сообщений о загрузке (status code 200)
+     */
+    @Override
+    public ResponseEntity<Resource> slotsReserveUpload(Long id, MultipartFile file) {
+        byte[] excelBytes;
+
+        try {
+            excelBytes = excelUploadService.processClientReserveFromExcel(file.getInputStream());
+            log.info("Excel файл успешно сгенерирован.");
+        } catch (IOException e) {
+            log.error("Ошибка при обработке Excel-файла", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        ByteArrayResource resource = new ByteArrayResource(excelBytes);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=slots_export.xlsx")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .contentLength(excelBytes.length)
+                .body(resource);
+    }
+
 }

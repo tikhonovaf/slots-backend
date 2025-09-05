@@ -1,4 +1,4 @@
-package ru.ttk.slotsbe.backend.util;
+package ru.ttk.slotsbe.backend.service.excel;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
@@ -10,14 +10,14 @@ import java.io.IOException;
 import java.util.List;
 
 @Slf4j
-public class ExcelReportGenerator {
+public class ExcelGenerator {
 
     private static final String[] HEADERS = {
             "Дата слота", "Время начала", "Время окончания", "Статус",
             "Нефтебаза", "Пункт налива", "Клиент"
     };
 
-    public static byte[] generateExcel(List<VSlot> slots) {
+    public static byte[] generateExcelSlots(List<VSlot> slots) {
         log.info("Начало генерации Excel-отчета. Количество слотов: {}", slots.size());
 
         try (Workbook workbook = new XSSFWorkbook();
@@ -52,6 +52,18 @@ public class ExcelReportGenerator {
                 sheet.autoSizeColumn(i);
             }
 
+            workbook.write(out);
+            log.info("Excel-отчет успешно сгенерирован.");
+            return out.toByteArray();
+        } catch (IOException e) {
+            log.error("Ошибка при генерации Excel-отчета", e);
+            throw new RuntimeException("Ошибка при генерации Excel-файла", e);
+        }
+    }
+
+    public static byte[] generateExcelReservedSlots(Workbook workbook) {
+
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             workbook.write(out);
             log.info("Excel-отчет успешно сгенерирован.");
             return out.toByteArray();

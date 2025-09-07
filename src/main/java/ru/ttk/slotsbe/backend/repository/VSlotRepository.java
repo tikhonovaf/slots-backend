@@ -2,6 +2,7 @@ package ru.ttk.slotsbe.backend.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import ru.ttk.slotsbe.backend.model.Slot;
 import ru.ttk.slotsbe.backend.model.VSlot;
 
 import jakarta.validation.Valid;
@@ -26,5 +27,12 @@ public interface VSlotRepository extends JpaRepository<VSlot, Long> {
             "   ORDER BY n_store_id, d_date, d_start_time \n"
             , nativeQuery = true)
     List<VSlot> findAllByNClientId(Long nClientId);
+
+    @Query(value = """
+            SELECT * FROM v_slot
+            WHERE d_date >= :slotDate
+                AND n_status_id  = 1
+            """, nativeQuery = true)
+    List<VSlot> findAllFreeSlots(LocalDate slotDate);
 
 }

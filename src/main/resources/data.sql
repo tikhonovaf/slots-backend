@@ -42,21 +42,21 @@ WHERE N_SUBJ_TYPE_ID = 9
 ;
 
 
-INSERT INTO client_user(n_user_id, vc_first_name, vc_last_name, n_client_id,
+INSERT INTO client_user(n_user_id, vc_first_name, vc_second_name, n_client_id,
                         vc_login, vc_password, vc_email, n_role_id)
 VALUES (1, 'ADMIN', 'ADMIN', 1,
         'ADMIN',
         '8257a3811b9f6bb9d59dfb3931e220fa5574cee38fff551066caca1a50b1691ebdffa87f2d7213910e8bdbcf4d669c2756e57196667dd8f5e8af66971b2',
-         'tixft@mail.ru', 1),
+         'tixft1@mail.ru', 1),
        (2, 'USER2', 'USER2', 2,
         'USER2',
         '8257a3811b9f6bb9d59dfb3931e220fa5574cee38fff551066caca1a50b1691ebdffa87f2d7213910e8bdbcf4d669c2756e57196667dd8f5e8af66971b2',
-        'tixft@mail.ru', 3),
+        'tixft2@mail.ru', 3),
        (3, 'USER3', 'USER3', 3,
         'USER3',
         '8257a3811b9f6bb9d59dfb3931e220fa5574cee38fff551066caca1a50b1691ebdffa87f2d7213910e8bdbcf4d669c2756e57196667dd8f5e8af66971b2',
-        'tixft@mail.ru', 3),
-       (4, 'USER4', 'USER4', 4,
+        'tixft3@mail.ru', 3),
+       (4, 'Михаил', 'Петрович', 4,
         'USER4',
         '8257a3811b9f6bb9d59dfb3931e220fa5574cee38fff551066caca1a50b1691ebdffa87f2d7213910e8bdbcf4d669c2756e57196667dd8f5e8af66971b2',
         'tixft@mail.ru', 3)

@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import ru.ttk.slotsbe.backend.model.*;
 import ru.ttk.slotsbe.backend.repository.*;
 import ru.ttk.slotsbe.backend.security.Sha512PasswordEncoder;
@@ -334,7 +333,7 @@ public class ExcelUploadService {
 
         for (int i = 0; i < times.length; i++) {
             Cell cell = row.getCell(3 + i);
-            List<Slot> slots = slotRepository.findAllFreeSlots(loadingPointId, slotDate, times[i]);
+            List<Slot> slots = slotRepository.findAllFreeSlotsByPointId(loadingPointId, slotDate, times[i]);
 
             if (slots.isEmpty()) {
                 cell.setCellStyle(styleReserved);
@@ -346,6 +345,7 @@ public class ExcelUploadService {
                     slotRepository.save(slot);
                     slotFound = true;
                 }
+                break;
             }
         }
 

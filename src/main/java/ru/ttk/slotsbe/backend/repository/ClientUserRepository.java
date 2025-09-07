@@ -15,17 +15,24 @@ import java.util.Optional;
 public interface ClientUserRepository extends JpaRepository<ClientUser, Long> {
     Optional<ClientUser> findByVcLogin(String login);
 
-    @Query(value = "SELECT * FROM client_user\n" +
-            "WHERE (:ids IS NULL OR n_user_id IN (:ids) )"
-            , nativeQuery = true)
-
-    List<ClientUser> findAllByNUserIds(List <Long> ids);
+    @Query(value = """
+            SELECT * FROM client_user
+            WHERE (:ids IS NULL OR n_user_id IN (:ids))
+            """, nativeQuery = true)
+    List<ClientUser> findAllByNUserIds(List<Long> ids);
 
     @Modifying
     @Transactional
-    @Query(value = "DELETE FROM client_user\n  " +
-            " WHERE n_client_id = :nClientId "
-            , nativeQuery = true)
+    @Query(value = """
+            DELETE FROM client_user
+            WHERE n_client_id = :nClientId
+            """, nativeQuery = true)
     void deleteAllByClientId(Long nClientId);
+
+    @Query(value = """
+            SELECT * FROM client_user
+            WHERE vc_email = :email
+            """, nativeQuery = true)
+    List<ClientUser> findByVcEmail(String email);
 
 }

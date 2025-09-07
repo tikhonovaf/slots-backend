@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+        .container {
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .header {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .message {
+            margin-bottom: 20px;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #0078D4;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header" th:text="'Уважаемый ' + ${name} + '!'"></div>
+    <p>Во вложении вы найдёте два Excel-файла:</p>
+    <ul class="list">
+        <li>Обработка запроса на резервирование</li>
+        <li>Список свободных слотов (если свободных лотов нет, то файл не выгружается)</li>
+    </ul>
+    <p>Если у вас возникнут вопросы — мы всегда на связи.</p>
+    <div class="footer">
+        С уважением,<br>
+        Ваша команда поддержки<br><br>
+        Это письмо сгенерировано автоматически. Пожалуйста, не отвечайте на него напрямую.
+    </div>
+</div>
+</body>
+</html>

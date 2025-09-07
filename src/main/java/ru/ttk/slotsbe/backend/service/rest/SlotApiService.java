@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.ttk.slotsbe.backend.dto.*;
 import ru.ttk.slotsbe.backend.mapper.SlotMapper;
 import ru.ttk.slotsbe.backend.model.*;
+import ru.ttk.slotsbe.backend.record.ExcelAttachment;
 import ru.ttk.slotsbe.backend.repository.*;
 import ru.ttk.slotsbe.backend.api.*;
 import ru.ttk.slotsbe.backend.service.email.ClientUsersEmailSendService;
@@ -124,18 +125,17 @@ public class SlotApiService implements SlotsApiDelegate {
             }
 
             // 3. Отправляем email с вложением
-            try {
-                String result = emailService.sendEmailToClientUserWithExcelAttachment(
-                        emailTo,
-                        "Customer Report",
-                        "Please find attached the customer report.",
-                        excelBytes,
-                        "customers_report.xlsx"
-                );
-                messages.add(result);
-            } catch (MessagingException e) {
-                throw new RuntimeException(e);
-            }
+
+            List<ExcelAttachment> excelFiles = List.of(
+                    new ExcelAttachment(excelBytes, "customers_report.xlsx")
+            );
+            String result = emailService.sendEmailToClientUserWithExcelAttachments(
+                    emailTo,
+                    "Customer Report",
+                    "Please find attached the customer report.",
+                    excelFiles
+            );
+            messages.add(result);
         }
         return ResponseEntity.ok(messages);
     }

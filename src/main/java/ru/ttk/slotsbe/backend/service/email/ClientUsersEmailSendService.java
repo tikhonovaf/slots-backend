@@ -1,5 +1,4 @@
 package ru.ttk.slotsbe.backend.service.email;
-import jakarta.mail.Address;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
@@ -9,9 +8,13 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import ru.ttk.slotsbe.backend.record.ExcelAttachment;
 
-import java.util.ArrayList;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,53 +24,46 @@ public class ClientUsersEmailSendService {
 
     private final JavaMailSender mailSender;
 
-    public String sendEmailToClientUserWithExcelAttachment(
+    public String sendEmailToClientUserWithExcelAttachments(
             String toEmail,
             String subject,
-            String body,
-            byte[] excelData,
-            String fileName
-    ) throws MessagingException {
+            String bodyHTML,
+            List<ExcelAttachment> attachments
+    ) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
 
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setTo(toEmail);
+            helper.setSubject(subject);
+            helper.setText(bodyHTML, true); // HTML включён
+            helper.setFrom(from);
 
-        helper.setTo(toEmail);
-        helper.setSubject(subject);
-        helper.setText(body);
-        helper.setFrom(from);
-
-        // Добавляем вложение
-        helper.addAttachment(fileName, new ByteArrayResource(excelData));
-
-        mailSender.send(message);
-        // Получение текста адреса отправителя
-        String fromAddressesText = null;
-        Address[] fromAddresses = message.getFrom();
-        if (fromAddresses != null && fromAddresses.length > 0) {
-            String senderEmail = ((InternetAddress) fromAddresses[0]).getAddress();
-            fromAddressesText = "От адреса: " + senderEmail;
-        } else {
-            fromAddressesText ="Отправитель не указан";
-        }
-
-        // Получение текста адресов получателдей
-        String recipientsText = null;
-        Address[] recipients = message.getAllRecipients();
-        if (recipients != null && recipients.length > 0) {
-            List<String> recipientEmails = new ArrayList<>();
-            for (Address recipient : recipients) {
-                recipientEmails.add(((InternetAddress) recipient).getAddress());
+            for (ExcelAttachment attachment : attachments) {
+                helper.addAttachment(attachment.fileName(), new ByteArrayResource(attachment.data()));
             }
-            recipientsText = " По адресу: " + String.join(", ", recipientEmails);
-        } else {
-            recipientsText = "Получатели не указаны";
-        }
 
-        if (!fromAddressesText.contains("не") && !recipientsText.contains("не")) {
-            return "Письмо успешщно отправлено " + fromAddressesText + recipientsText;
-        } else {
-            return "Адрес отправителя или получателя не указан " + fromAddressesText + recipientsText;
+            mailSender.send(message);
+
+            String fromText = Optional.ofNullable(message.getFrom())
+                    .map(addresses -> addresses.length > 0 ? ((InternetAddress) addresses[0]).getAddress() : null)
+                    .map(addr -> "От адреса: " + addr)
+                    .orElse("Отправитель не указан");
+
+            String toText = Optional.ofNullable(message.getAllRecipients())
+                    .map(recipients -> Arrays.stream(recipients)
+                            .map(addr -> ((InternetAddress) addr).getAddress())
+                            .collect(Collectors.joining(", ")))
+                    .map(list -> " По адресу: " + list)
+                    .orElse("Получатели не указаны");
+
+            return (!fromText.contains("не") && !toText.contains("не"))
+                    ? "Письмо успешно отправлено " + fromText + toText
+                    : "Адрес отправителя или получателя не указан " + fromText + toText;
+
+        } catch (MessagingException e) {
+            return "Ошибка при отправке письма: " + e.getMessage();
         }
     }
+
 }

@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import ru.ttk.slotsbe.backend.model.Slot;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -42,9 +41,7 @@ public interface SlotRepository extends JpaRepository<Slot, Long> {
                 AND d_start_time  = :startTime
                 AND n_status_id  = 1
             """, nativeQuery = true)
-    List<Slot> findAllFreeSlots(Long loadingPointId, LocalDate slotDate, LocalTime startTime
+    List<Slot> findAllFreeSlotsByPointId(Long loadingPointId, LocalDate slotDate, LocalTime startTime
     );
-
-
 
 }

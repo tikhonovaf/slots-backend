@@ -13,8 +13,8 @@ import java.util.List;
 public class ExcelGenerator {
 
     private static final String[] HEADERS = {
-            "Дата слота", "Время начала", "Время окончания", "Статус",
-            "Нефтебаза", "Пункт налива", "Клиент"
+            "Нефтебаза", "Пункт налива", "Дата слота", "Время начала", "Время окончания", "Статус",
+             "Клиент"
     };
 
     public static byte[] generateExcelSlots(List<VSlot> slots) {
@@ -39,12 +39,12 @@ public class ExcelGenerator {
             int rowNum = 1;
             for (VSlot slot : slots) {
                 Row row = sheet.createRow(rowNum++);
-                createCell(row, 0, java.sql.Date.valueOf(slot.getDDate()), dateStyle);
-                createCell(row, 1, java.sql.Time.valueOf(slot.getDStartTime()), timeStyle);
-                createCell(row, 2, java.sql.Time.valueOf(slot.getDEndTime()), timeStyle);
-                createCell(row, 3, slot.getVcStatusName(), null);
-                createCell(row, 4, slot.getVcStoreName(), null);
-                createCell(row, 5, slot.getVcLoadingPointName(), null);
+                createCell(row, 0, slot.getVcStoreCode(), null);
+                createCell(row, 1, slot.getVcLoadingPointCode(), null);
+                createCell(row, 2, java.sql.Date.valueOf(slot.getDDate()), dateStyle);
+                createCell(row, 3, java.sql.Time.valueOf(slot.getDStartTime()), timeStyle);
+                createCell(row, 4, java.sql.Time.valueOf(slot.getDEndTime()), timeStyle);
+                createCell(row, 5, slot.getVcStatusName(), null);
                 createCell(row, 6, slot.getVcClientName(), null);
             }
 

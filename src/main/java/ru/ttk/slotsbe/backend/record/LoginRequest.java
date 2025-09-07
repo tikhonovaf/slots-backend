@@ -1,4 +1,4 @@
-package ru.ttk.slotsbe.backend.dto;
+package ru.ttk.slotsbe.backend.record;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

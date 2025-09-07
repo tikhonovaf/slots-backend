@@ -1,0 +1,15 @@
+services:
+  slotsbe:
+    image: slotsbe:latest
+    container_name: slotsbe
+    ports:
+      - "8081:8081"
+    environment:
+      JAVA_OPTS: >-
+        -Xms1024m -Xmx1024m
+        -Dspring.profiles.active=h2
+        -Dmail.host=smtp.yandex.ru
+        -Dmail.port=465
+        -Dmail.username=tikhonovafZel@yandex.ru
+        -Dmail.password=lrvbtcwgqqmfupgp
+    restart: unless-stopped

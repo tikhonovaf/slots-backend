@@ -107,14 +107,15 @@ public class SlotApiService implements SlotsApiDelegate {
      * @param ids (optional)
      * @return Пустой ответ (status code 200)
      */
-    public ResponseEntity<List<String>> sendMailsToUsers(List<Long> ids) {
+    public ResponseEntity<List<String>> sendMailsToUsers(List<Long> ids,
+                                                         LocalDate dDateBegin, LocalDate dDateEnd) {
         List<String> messages = new ArrayList<>();
         // Выбираем список пользователей
         List<ClientUser> users = clientUserRepository.findAllByNUserIds(ids);
 
-        // Выбираем список слотов на сегодняшний день и после для клиента, по заданному идентификатору пользователя
+        // Выбираем список слотов по заданным параметрам
         for (ClientUser user : users) {
-            List<VSlot> slots = vSlotRepository.findAllByNClientId(user.getNClientId());
+            List<VSlot> slots = vSlotRepository.findAllByClientIdAndDate(dDateBegin, dDateEnd);
             String emailTo = user.getVcEmail();
             // Генерируем Excel в памяти
             byte[] excelBytes = null;
@@ -146,7 +147,7 @@ public class SlotApiService implements SlotsApiDelegate {
      * @param file Файл для загрузки (optional)
      * @return Пустой ответ (status code 200)
      */
-    public ResponseEntity<List<String>> slotsTemplateUpload(MultipartFile file)  {//    @Override
+    public ResponseEntity<List<String>> slotsTemplateUpload(MultipartFile file) {//    @Override
         List<String> messages = null;
         try {
             messages = excelUploadService.saveSlotTemplatesFromExcel(file.getInputStream());
@@ -323,7 +324,7 @@ public class SlotApiService implements SlotsApiDelegate {
     /**
      * POST /slots/reserve/upload : Загрузка файла с запросом от пользователя клиента (для отладки)
      *
-     * @param id ИД пользователя (required)
+     * @param id   ИД пользователя (required)
      * @param file Файл для загрузки (optional)
      * @return Список сообщений о загрузке (status code 200)
      */

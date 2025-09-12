@@ -35,4 +35,13 @@ public interface VSlotRepository extends JpaRepository<VSlot, Long> {
             """, nativeQuery = true)
     List<VSlot> findAllFreeSlots(LocalDate slotDate);
 
+
+    @Query(value = "SELECT * FROM v_slot\n" +
+            "WHERE (:dDateBegin IS NULL OR d_date >= :dDateBegin)\n" +
+            " AND (:dDateEnd IS NULL OR d_date <= :dDateEnd)\n" +
+            " AND n_status_id  = 1 " +
+            "   ORDER BY n_store_id, d_date, d_start_time \n"
+            , nativeQuery = true)
+    List<VSlot> findAllByClientIdAndDate(@Valid LocalDate dDateBegin, @Valid LocalDate dDateEnd);
+
 }

@@ -233,7 +233,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/userIds"
+              $ref: "#/components/schemas/slotSendByEmailParams"
       responses:
         200:
           description: Список сообщений об отправке email
@@ -293,6 +293,28 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/clientUsersDtos"
+
+  /clients/users/{clientId}:
+    get:
+      summary: Выборка списка пользователей клиентов (детальная)
+      operationId: getClientsUsersDetails
+      tags:
+        - REF
+      parameters:
+        - name: clientId
+          description: ИД клиента
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: Список пользователей клиентов (детальная)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/clientUsersDetailsDtos"
 
   /stores:
     get:
@@ -705,6 +727,27 @@ components:
           format: date
           description: Дата окончания слота
           example: 2025-07-19
+    slotSendByEmailParams:
+      description: Параметры для отправки писем пользователям клиентов
+      type: object
+      properties:
+        nUserIds:
+          description: Список пользователей клиентов
+          type: array
+          items:
+            type: integer
+            format: int64
+        dDateBegin:
+          type: string
+          format: date
+          description: Дата начала слотов
+          example: 2025-07-12
+        dDateEnd:
+          type: string
+          format: date
+          description: Дата окончания слота
+          example: 2025-07-19
+
     userIds:
       description: Список идентификаторов пользователей
       type: array
@@ -817,3 +860,50 @@ components:
           description: Логин
           example: test
 
+    clientUsersDetailsDtos:
+      type: array
+      description: Список пользователей заданного клиента
+      items:
+        $ref: "#/components/schemas/clientUsersDetailsDto"
+    clientUsersDetailsDto:
+      type: object
+      description: Данные пользователя
+      properties:
+        nClientId:
+          type: integer
+          format: int64
+          description: Идентификатор клиента
+          example: 1
+        vcClientCode:
+          type: string
+          description: Код клиента
+          example: Код 1
+        nUserId:
+          type: integer
+          format: int64
+          description: Идентификатор пользователя клиента
+          example: 1
+        vcFirstName:
+          type: string
+          description: Имя
+          example: Петр
+        vcLastName:
+          type: string
+          description: Фамилия
+          example: Петров
+        vcSecondName:
+          type: string
+          description: Отчество
+          example: Петрович
+        vcEmail:
+          type: string
+          description: email
+          example: email
+        vcPhone:
+          type: string
+          description: phone
+          example: +7(916)234-67-89
+        vcLogin:
+          type: string
+          description: Логин
+          example: test

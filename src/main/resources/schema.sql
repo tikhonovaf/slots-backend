@@ -167,3 +167,21 @@ SELECT
     JOIN client_user u on u.n_client_id = c.n_client_id
     WHERE u.n_role_id = 3
 ;
+
+
+-- Список пользователей покупателей ( view)
+
+CREATE VIEW v_client_user_detail
+AS
+SELECT u.n_user_id,
+       u.n_client_id,
+       c.vc_code as vc_client_code,
+       vc_first_name,
+       u.vc_last_name,
+       u.vc_second_name,
+       u.vc_email,
+       u.vc_phone,
+       u.vc_login
+FROM v_client c
+         JOIN client_user u on u.n_client_id = c.n_client_id
+;

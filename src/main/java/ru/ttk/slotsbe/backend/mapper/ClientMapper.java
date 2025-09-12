@@ -1,10 +1,11 @@
 package ru.ttk.slotsbe.backend.mapper;
 
 import org.springframework.stereotype.Service;
-import ru.ttk.slotsbe.backend.dto.ClientDto;
+import ru.ttk.slotsbe.backend.dto.*;
 import ru.ttk.slotsbe.backend.dto.ClientUsersDto;
 import ru.ttk.slotsbe.backend.model.VClient;
 import ru.ttk.slotsbe.backend.model.VClientUser;
+import ru.ttk.slotsbe.backend.model.VClientUserDetail;
 import ru.ttk.slotsbe.backend.util.CoreUtil;
 
 /**
@@ -35,6 +36,19 @@ public class ClientMapper {
      */
     public ClientUsersDto fromViewToDto(VClientUser view) {
         ClientUsersDto result = new ClientUsersDto();
+        CoreUtil.patch(view, result);
+
+        return result;
+    }
+
+    /**
+     * Маппинг из View VClient в DTO
+     *
+     * @param view - строка из view SlotView
+     * @return Данные в структуре DTO
+     */
+    public ClientUsersDetailsDto fromViewToDto(VClientUserDetail view) {
+        ClientUsersDetailsDto result = new ClientUsersDetailsDto();
         CoreUtil.patch(view, result);
 
         return result;

@@ -61,18 +61,6 @@ public class ExcelGenerator {
         }
     }
 
-    public static byte[] generateExcelReservedSlots(Workbook workbook) {
-
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            workbook.write(out);
-            log.info("Excel-отчет успешно сгенерирован.");
-            return out.toByteArray();
-        } catch (IOException e) {
-            log.error("Ошибка при генерации Excel-отчета", e);
-            throw new RuntimeException("Ошибка при генерации Excel-файла", e);
-        }
-    }
-
     private static void createCell(Row row, int columnIndex, Object value, CellStyle style) {
         Cell cell = row.createCell(columnIndex);
         if (value instanceof String) {

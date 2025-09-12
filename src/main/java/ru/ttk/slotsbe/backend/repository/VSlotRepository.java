@@ -6,26 +6,29 @@ import ru.ttk.slotsbe.backend.model.Slot;
 import ru.ttk.slotsbe.backend.model.VSlot;
 
 import jakarta.validation.Valid;
+
 import java.time.LocalDate;
 import java.util.List;
 
 public interface VSlotRepository extends JpaRepository<VSlot, Long> {
 
-    @Query(value = "SELECT * FROM v_slot\n" +
-            "WHERE (:nStoreIds IS NULL OR n_store_id IN (:nStoreIds) )\n" +
-            " AND (:nClientIds IS NULL OR n_client_id IN (:nClientIds))\n" +
-            " AND (:nStatusId IS NULL OR n_status_id = :nStatusId)\n" +
-            " AND (:dDateBegin IS NULL OR d_date >= :dDateBegin)\n" +
-            " AND (:dDateEnd IS NULL OR d_date <= :dDateEnd)\n" +
-            "   ORDER BY n_store_id, d_date, d_start_time \n"
-            , nativeQuery = true)
-    List<VSlot> findAllByFilter(List <Long> nStoreIds, List <Long> nClientIds,
+    @Query(value = """
+            SELECT * FROM v_slot
+            WHERE (:nStoreIds IS NULL OR n_store_id IN (:nStoreIds))
+              AND (:nClientIds IS NULL OR n_client_id IN (:nClientIds))
+              AND (:nStatusId IS NULL OR n_status_id = :nStatusId)
+              AND (:dDateBegin IS NULL OR d_date >= :dDateBegin)
+              AND (:dDateEnd IS NULL OR d_date <= :dDateEnd)
+            ORDER BY d_date, d_start_time, n_store_id
+            """, nativeQuery = true)
+    List<VSlot> findAllByFilter(List<Long> nStoreIds, List<Long> nClientIds,
                                 Long nStatusId, @Valid LocalDate dDateBegin, @Valid LocalDate dDateEnd);
 
-    @Query(value = "SELECT * FROM v_slot\n" +
-            "WHERE n_client_id = :nClientId" +
-            "   ORDER BY n_store_id, d_date, d_start_time \n"
-            , nativeQuery = true)
+    @Query(value = """
+            SELECT * FROM v_slot
+            WHERE n_client_id = :nClientId
+            ORDER BY d_date, d_start_time, n_store_id
+            """, nativeQuery = true)
     List<VSlot> findAllByNClientId(Long nClientId);
 
     @Query(value = """
@@ -36,12 +39,19 @@ public interface VSlotRepository extends JpaRepository<VSlot, Long> {
     List<VSlot> findAllFreeSlots(LocalDate slotDate);
 
 
-    @Query(value = "SELECT * FROM v_slot\n" +
-            "WHERE (:dDateBegin IS NULL OR d_date >= :dDateBegin)\n" +
-            " AND (:dDateEnd IS NULL OR d_date <= :dDateEnd)\n" +
-            " AND n_status_id  = 1 " +
-            "   ORDER BY n_store_id, d_date, d_start_time \n"
-            , nativeQuery = true)
-    List<VSlot> findAllByClientIdAndDate(@Valid LocalDate dDateBegin, @Valid LocalDate dDateEnd);
+    @Query(value = """
+            SELECT * FROM v_slot
+            WHERE (:dDateBegin IS NULL OR d_date >= :dDateBegin)
+              AND (:dDateEnd IS NULL OR d_date <= :dDateEnd)
+              AND n_status_id = 1
+            UNION ALL
+            SELECT * FROM v_slot
+            WHERE (:dDateBegin IS NULL OR d_date >= :dDateBegin)
+              AND (:dDateEnd IS NULL OR d_date <= :dDateEnd)
+              AND n_status_id = 2
+              AND n_client_id = :clientId
+            ORDER BY d_date, d_start_time, n_store_id
+            """, nativeQuery = true)
+    List<VSlot> findAllByClientIdAndDate(Long clientId, @Valid LocalDate dDateBegin, @Valid LocalDate dDateEnd);
 
 }

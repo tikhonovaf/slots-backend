@@ -12,6 +12,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 import ru.ttk.slotsbe.backend.dto.*;
 import ru.ttk.slotsbe.backend.mapper.SlotMapper;
 import ru.ttk.slotsbe.backend.model.*;
@@ -49,6 +51,7 @@ public class SlotApiService implements SlotsApiDelegate {
     private final ClientUsersEmailSendService emailService;
     private final ExcelUploadService excelUploadService;
     private final SlotStatusRepository slotStatusRepository;
+    private final TemplateEngine templateEngine;
 
     /**
      * Список слотов
@@ -75,6 +78,7 @@ public class SlotApiService implements SlotsApiDelegate {
      * @return Excel файл (status code 200)
      */
 
+    @Override
     public ResponseEntity<Resource> downloadSlotsToExcel(SlotSearchFilter slotSearchFilter) {
 
         //  Формирование выборки из View по заданным фильтрам
@@ -104,18 +108,24 @@ public class SlotApiService implements SlotsApiDelegate {
     /**
      * PATCH /slots/mails : Отправка писем со слотами пользователям
      *
-     * @param ids (optional)
+     * @param slotSendByEmailParams
      * @return Пустой ответ (status code 200)
      */
-    public ResponseEntity<List<String>> sendMailsToUsers(List<Long> ids,
-                                                         LocalDate dDateBegin, LocalDate dDateEnd) {
+    @Override
+    public ResponseEntity<List<String>> sendMailsToUsers(SlotSendByEmailParams slotSendByEmailParams) {
         List<String> messages = new ArrayList<>();
         // Выбираем список пользователей
-        List<ClientUser> users = clientUserRepository.findAllByNUserIds(ids);
+        List<ClientUser> users = clientUserRepository.findAllByNUserIds(slotSendByEmailParams.getnUserIds());
 
         // Выбираем список слотов по заданным параметрам
         for (ClientUser user : users) {
-            List<VSlot> slots = vSlotRepository.findAllByClientIdAndDate(dDateBegin, dDateEnd);
+            List<VSlot> slots = vSlotRepository.findAllByClientIdAndDate(
+                    user.getNClientId(),
+                    slotSendByEmailParams.getdDateBegin(),
+                    slotSendByEmailParams.getdDateEnd());
+            messages.add("Выборка слотов для пользователя c email: " + user.getVcEmail()
+                    + " За период: " + slotSendByEmailParams.getdDateBegin() + " - " + slotSendByEmailParams.getdDateEnd() +
+                    " Количество слотов: "  + slots.size());
             String emailTo = user.getVcEmail();
             // Генерируем Excel в памяти
             byte[] excelBytes = null;
@@ -128,12 +138,21 @@ public class SlotApiService implements SlotsApiDelegate {
             // 3. Отправляем email с вложением
 
             List<ExcelAttachment> excelFiles = List.of(
-                    new ExcelAttachment(excelBytes, "customers_report.xlsx")
+                    new ExcelAttachment(excelBytes, "Список слотов.xlsx")
             );
+
+            // Генерация HTML из шаблона
+            String subject = "Список зарезервированных клиентом слотов и свободных слотов";
+            Context context = new Context();
+            String clientName=  user.getVcFirstName() + " " + user.getVcSecondName();
+
+            context.setVariable("name", clientName);
+            String htmlContent = templateEngine.process("email-template", context);
+
             String result = emailService.sendEmailToClientUserWithExcelAttachments(
                     emailTo,
-                    "Customer Report",
-                    "Please find attached the customer report.",
+                    subject,
+                    htmlContent,
                     excelFiles
             );
             messages.add(result);
@@ -147,7 +166,8 @@ public class SlotApiService implements SlotsApiDelegate {
      * @param file Файл для загрузки (optional)
      * @return Пустой ответ (status code 200)
      */
-    public ResponseEntity<List<String>> slotsTemplateUpload(MultipartFile file) {//    @Override
+    @Override
+    public ResponseEntity<List<String>> slotsTemplateUpload(MultipartFile file)  {//    @Override
         List<String> messages = null;
         try {
             messages = excelUploadService.saveSlotTemplatesFromExcel(file.getInputStream());
@@ -163,6 +183,7 @@ public class SlotApiService implements SlotsApiDelegate {
      * @param slotGenerateParams (optional)
      * @return Список сообщений о формировании слотов (status code 200)
      */
+    @Override
     public ResponseEntity<List<String>> generateSlots(SlotGenerateParams slotGenerateParams) {
         List<String> messages = new ArrayList<>();
         List<Slot> slotsToSave = new ArrayList<>();
@@ -324,7 +345,7 @@ public class SlotApiService implements SlotsApiDelegate {
     /**
      * POST /slots/reserve/upload : Загрузка файла с запросом от пользователя клиента (для отладки)
      *
-     * @param id   ИД пользователя (required)
+     * @param id ИД пользователя (required)
      * @param file Файл для загрузки (optional)
      * @return Список сообщений о загрузке (status code 200)
      */

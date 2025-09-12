@@ -14,6 +14,7 @@ import ru.ttk.slotsbe.backend.repository.VClientRepository;
 import ru.ttk.slotsbe.backend.repository.VClientUserDetailRepository;
 import ru.ttk.slotsbe.backend.repository.VClientUserRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -77,12 +78,23 @@ public class ClientApiService implements ClientsApiDelegate {
      */
     @Override
     public ResponseEntity<List<ClientUsersDetailsDto>> getClientsUsersDetails(Long clientId) {
-        List<ClientUsersDetailsDto> result =
-                vClientUserDetailRepository
-                        .findByClientId(clientId)
-                        .stream()
-                        .map(clientMapper::fromViewToDto)
-                        .collect(Collectors.toList());
+        List<ClientUsersDetailsDto> result = new ArrayList<>();
+
+        if (clientId  == null || clientId == 0L) {
+            result =
+                    vClientUserDetailRepository
+                            .findAll()
+                            .stream()
+                            .map(clientMapper::fromViewToDto)
+                            .collect(Collectors.toList());
+        } else {
+            result =
+                    vClientUserDetailRepository
+                            .findByClientId(clientId)
+                            .stream()
+                            .map(clientMapper::fromViewToDto)
+                            .collect(Collectors.toList());
+        }
 
         return ResponseEntity.ok(result);
 

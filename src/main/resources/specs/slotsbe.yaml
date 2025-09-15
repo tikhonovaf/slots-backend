@@ -907,3 +907,16 @@ components:
           type: string
           description: Логин
           example: test
+        nRoletId:
+          type: integer
+          format: int64
+          description: Идентификатор роли
+          example: 1
+        vcRoleCode:
+          type: string
+          description: Код роли
+          example: Код 1
+        vcRoleName:
+          type: string
+          description: Наименование роли
+          example: Наименование 1

@@ -26,7 +26,6 @@ public class VClientUserDetail {
     /**
      * client
      */
-
     @Column(name = "n_client_id")
     Long nClientId;
 
@@ -65,5 +64,20 @@ public class VClientUserDetail {
      */
     String vcPhone;
 
+    /**
+     * role
+     */
+    @Column(name = "n_role_id")
+    Long nRoleId;
+
+    /**
+     * Код роли
+     */
+    String vcRoleCode;
+
+    /**
+     * Название роли
+     */
+    String vcRoleName;
 
 }

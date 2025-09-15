@@ -198,7 +198,11 @@ SELECT u.n_user_id,
        u.vc_second_name,
        u.vc_email,
        u.vc_phone,
-       u.vc_login
-FROM v_client c
-         LEFT JOIN client_user u on u.n_client_id = c.n_client_id
+       u.vc_login,
+       u.n_role_id,
+       r.vc_code as vc_role_code,
+       r.vc_name as vc_role_name
+FROM client_user u
+         LEFT JOIN v_client c on u.n_client_id = c.n_client_id
+         JOIN slot_role r on r.n_role_id = u.n_role_id
 ;

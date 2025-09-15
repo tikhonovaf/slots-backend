@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.stereotype.Service;
 import ru.ttk.slotsbe.backend.model.*;
 import ru.ttk.slotsbe.backend.repository.*;
@@ -32,7 +33,14 @@ public class ExcelUploadService {
     private final ClientUserRepository clientUserRepository;
     private final Sha512PasswordEncoder sha512PasswordEncoder;
 
-    public static final Long RESERVED = 2L;
+    static final Long RESERVED = 2L;
+    static final String ADMIN = "Администратор";
+    static final String DISPATCHER = "Диспетчер";
+    static final String CLIENT_USER = "Пользователь клиента";
+    static final Long ADMIN_ID = 1L;
+    static final Long DISPATCHER_ID = 2L;
+    static final Long CLIENT_USER_ID = 3L;
+
 
     public List<String> saveSlotTemplatesFromExcel(InputStream is) {
         List<String> result = new ArrayList<>();
@@ -219,15 +227,8 @@ public class ExcelUploadService {
         ClientUser clientUser = new ClientUser();
 
         String clientCode = getCellStringValue(row.getCell(0));
-        if (clientCode.isEmpty()) {
-            clientUser.setNRoleId(2L);
-//            result.add("Строка " + (row.getRowNum() + 1) + ": пользователь с ролью диспетчер.");
-//            return Optional.empty();
-        } else {
-            clientUser.setNRoleId(3L);
-            List<VClient> vClients =
-                    vClientRepository.findAllByVcCode(clientCode);
-
+        if (!clientCode.isEmpty()) {
+            List<VClient> vClients = vClientRepository.findAllByVcCode(clientCode);
             if (vClients.isEmpty()) {
                 result.add("Строка " + (row.getRowNum() + 1) + ": не найден клиент с заданным кодом.");
                 return Optional.empty();
@@ -257,6 +258,14 @@ public class ExcelUploadService {
         clientUser.setVcEmail(getCellStringValue(row.getCell(6)));
         clientUser.setVcPhone(getCellStringValue(row.getCell(7)));
 
+        Long roleId = CLIENT_USER_ID;
+        String roleName = getCellStringValue(row.getCell(8));
+        if (roleName.equals(ADMIN)) {
+            roleId = ADMIN_ID;
+        } else if (roleName.equals(DISPATCHER)) {
+            roleId = DISPATCHER_ID;
+        }
+        clientUser.setNRoleId(roleId);
         return Optional.of(clientUser);
     }
 

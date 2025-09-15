@@ -69,12 +69,13 @@ public class ClientUsersEmailReaderService {
                 }
                 InternetAddress address = new InternetAddress(message.getFrom()[0].toString());
                 String senderEmail = address.getAddress();
+                log.info("senderEmail: {}", senderEmail);
                 // Проверка, что письмо от пользователя клиента
                 if (clientUserRepository.findByVcEmail(senderEmail).isEmpty()) {
                     continue;
                 } else {
                     ClientUser clientUser = clientUserRepository.findByVcEmail(senderEmail).get(0);
-                    if (!clientUser.getVcFirstName().isEmpty() && !clientUser.getVcSecondName().isEmpty()) {
+                    if (!(clientUser.getVcFirstName() == null) && !(clientUser.getVcSecondName() == null)) {
                        clientName=  clientUser.getVcFirstName() + " " + clientUser.getVcSecondName();
                     }
                 }

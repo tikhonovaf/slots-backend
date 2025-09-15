@@ -26,9 +26,7 @@ import ru.ttk.slotsbe.backend.service.excel.ExcelUploadService;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -52,6 +50,9 @@ public class SlotApiService implements SlotsApiDelegate {
     private final ExcelUploadService excelUploadService;
     private final SlotStatusRepository slotStatusRepository;
     private final TemplateEngine templateEngine;
+    private final UserService userService;
+
+    public static final Long RESERVED = 2L; // название подбирайте по смыслу
 
     /**
      * Список слотов
@@ -59,16 +60,42 @@ public class SlotApiService implements SlotsApiDelegate {
     @Override
     public ResponseEntity<List<SlotDto>> getSlotsByFilters(SlotSearchFilter slotSearchFilter) {
 //      Формирование выборки из View по заданным фильтрам
-        List<SlotDto> result =
-                vSlotRepository
-                        .findAllByFilter(slotSearchFilter.getnStoreIds(), slotSearchFilter.getnClientIds(),
-                                slotSearchFilter.getnStatusId(), slotSearchFilter.getdDateBegin(), slotSearchFilter.getdDateEnd())
-                        .stream()
-                        .map(v -> slotMapper.fromViewToDto(v))
-                        .collect(Collectors.toList());
+//      Если роль = 3 (пользователь клиента, то выборка с ограничением мпо клиенту )
+        ClientUser currentUser = userService.getCurrentUser();
+        if (currentUser.getNRoleId() < 3) {
+            List<SlotDto> result =
+                    vSlotRepository
+                            .findAllByFilter(slotSearchFilter.getnStoreIds(), slotSearchFilter.getnClientIds(),
+                                    slotSearchFilter.getnStatusId(), slotSearchFilter.getdDateBegin(), slotSearchFilter.getdDateEnd())
+                            .stream()
+                            .map(slotMapper::fromViewToDto)
+                            .toList();
 
-        return ResponseEntity.ok(result);
+            return ResponseEntity.ok(result);
+        } else {
+            if (slotSearchFilter.getnStatusId() == RESERVED) {
+                List<SlotDto> result =
+                        vSlotRepository
+                                .findAllByFilter(slotSearchFilter.getnStoreIds(), slotSearchFilter.getnClientIds(),
+                                        slotSearchFilter.getnStatusId(), slotSearchFilter.getdDateBegin(), slotSearchFilter.getdDateEnd())
+                                .stream()
+                                .map(slotMapper::fromViewToDto)
+                                .toList();
 
+                return ResponseEntity.ok(result);
+            } else {
+                Long nClientId = currentUser.getNClientId();
+                List<SlotDto> result =
+                        vSlotRepository
+                                .findAllFreeAndByFilter(slotSearchFilter.getnStoreIds(), nClientId,
+                                        slotSearchFilter.getdDateBegin(), slotSearchFilter.getdDateEnd())
+                                .stream()
+                                .map(slotMapper::fromViewToDto)
+                                .toList();
+
+                return ResponseEntity.ok(result);
+            }
+        }
     }
 
     /**
@@ -125,7 +152,7 @@ public class SlotApiService implements SlotsApiDelegate {
                     slotSendByEmailParams.getdDateEnd());
             messages.add("Выборка слотов для пользователя c email: " + user.getVcEmail()
                     + " За период: " + slotSendByEmailParams.getdDateBegin() + " - " + slotSendByEmailParams.getdDateEnd() +
-                    " Количество слотов: "  + slots.size());
+                    " Количество слотов: " + slots.size());
             String emailTo = user.getVcEmail();
             // Генерируем Excel в памяти
             byte[] excelBytes = null;
@@ -144,7 +171,7 @@ public class SlotApiService implements SlotsApiDelegate {
             // Генерация HTML из шаблона
             String subject = "Список зарезервированных клиентом слотов и свободных слотов";
             Context context = new Context();
-            String clientName=  user.getVcFirstName() + " " + user.getVcSecondName();
+            String clientName = user.getVcFirstName() + " " + user.getVcSecondName();
 
             context.setVariable("name", clientName);
             String htmlContent = templateEngine.process("email-template", context);
@@ -167,7 +194,7 @@ public class SlotApiService implements SlotsApiDelegate {
      * @return Пустой ответ (status code 200)
      */
     @Override
-    public ResponseEntity<List<String>> slotsTemplateUpload(MultipartFile file)  {//    @Override
+    public ResponseEntity<List<String>> slotsTemplateUpload(MultipartFile file) {//    @Override
         List<String> messages = null;
         try {
             messages = excelUploadService.saveSlotTemplatesFromExcel(file.getInputStream());
@@ -345,7 +372,7 @@ public class SlotApiService implements SlotsApiDelegate {
     /**
      * POST /slots/reserve/upload : Загрузка файла с запросом от пользователя клиента (для отладки)
      *
-     * @param id ИД пользователя (required)
+     * @param id   ИД пользователя (required)
      * @param file Файл для загрузки (optional)
      * @return Список сообщений о загрузке (status code 200)
      */

@@ -74,7 +74,6 @@ public class ClientApiService implements ClientsApiDelegate {
      *
      * @param clientId ИД клиента (required)
      * @return Список пользователей клиентов (детальная) (status code 200)
-     * @see ClientsApi#getClientsUsersDetails
      */
     @Override
     public ResponseEntity<List<ClientUsersDetailsDto>> getClientsUsersDetails(Long clientId) {

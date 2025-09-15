@@ -130,7 +130,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/uploadMessages"
+                $ref: "#/components/schemas/processingMessages"
   /slots/free:
     patch:
       summary: Снятие с резерва
@@ -148,7 +148,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/uploadMessages"
+                $ref: "#/components/schemas/processingMessages"
 
   /slots/reserve/upload/{clientUserId}:
     post:
@@ -201,7 +201,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/uploadMessages"
+                $ref: "#/components/schemas/processingMessages"
 
   /slots/download:
     post:
@@ -240,7 +240,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/uploadMessages"
+                $ref: "#/components/schemas/processingMessages"
   /slots/template/upload:
     post:
       tags:
@@ -264,7 +264,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/uploadMessages"
+                $ref: "#/components/schemas/processingMessages"
 
   /clients:
     get:
@@ -373,7 +373,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/uploadMessages"
+                $ref: "#/components/schemas/processingMessages"
 
   /admin/clientUsers/upload:
     post:
@@ -398,7 +398,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/uploadMessages"
+                $ref: "#/components/schemas/processingMessages"
 
 components:
   schemas:
@@ -754,7 +754,7 @@ components:
       items:
         type: integer
         format: int64
-    uploadMessages:
+    processingMessages:
       description: Список сообщений о загрузке
       type: array
       items:

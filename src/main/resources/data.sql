@@ -10,7 +10,7 @@ INSERT INTO slot_role( n_role_id, vc_code, vc_name)
 VALUES
     (1, 'A', 'Администратор' ),
     (2, 'D', 'Диспетчер'),
-    (3, 'C', 'Клиент')
+    (3, 'C', 'Пользователь клиента')
 ;
 
 INSERT INTO SI_V_SUBJECTS( N_SUBJECT_ID, vc_code, vc_name, N_SUBJ_TYPE_ID)
@@ -42,21 +42,21 @@ WHERE N_SUBJ_TYPE_ID = 9
 ;
 
 
-INSERT INTO client_user(n_user_id, vc_first_name, vc_second_name, n_client_id,
+INSERT INTO client_user(n_user_id, vc_last_name, vc_first_name, vc_second_name, n_client_id,
                         vc_login, vc_password, vc_email, n_role_id)
-VALUES (1, 'ADMIN', 'ADMIN', 5,
+VALUES (1, 'ADMIN', 'ADMIN', 'ADMIN', 5,
         'ADMIN',
         '8257a3811b9f6bb9d59dfb3931e220fa5574cee38fff551066caca1a50b1691ebdffa87f2d7213910e8bdbcf4d669c2756e57196667dd8f5e8af66971b2',
          'tixft1@mail.ru', 1),
-       (2, 'USER2', 'USER2', 6,
+       (2, 'USER2', 'USER2', 'USER2', 6,
         'USER2',
         '8257a3811b9f6bb9d59dfb3931e220fa5574cee38fff551066caca1a50b1691ebdffa87f2d7213910e8bdbcf4d669c2756e57196667dd8f5e8af66971b2',
         'tixft2@mail.ru', 3),
-       (3, 'USER3', 'USER3', 7,
+       (3, 'USER3', 'USER3', 'USER3', 7,
         'USER3',
         '8257a3811b9f6bb9d59dfb3931e220fa5574cee38fff551066caca1a50b1691ebdffa87f2d7213910e8bdbcf4d669c2756e57196667dd8f5e8af66971b2',
         'tixft3@mail.ru', 3),
-       (4, 'Михаил', 'Петрович', 8,
+       (4, 'Петров', 'Михаил', 'Петрович', 8,
         'USER4',
         '8257a3811b9f6bb9d59dfb3931e220fa5574cee38fff551066caca1a50b1691ebdffa87f2d7213910e8bdbcf4d669c2756e57196667dd8f5e8af66971b2',
         'tixft@mail.ru', 3)

@@ -219,21 +219,24 @@ public class ExcelUploadService {
         ClientUser clientUser = new ClientUser();
 
         String clientCode = getCellStringValue(row.getCell(0));
-
         if (clientCode.isEmpty()) {
-            result.add("Строка " + (row.getRowNum() + 1) + ": не задан код клиента.");
-            return Optional.empty();
+            clientUser.setNRoleId(2L);
+//            result.add("Строка " + (row.getRowNum() + 1) + ": пользователь с ролью диспетчер.");
+//            return Optional.empty();
+        } else {
+            clientUser.setNRoleId(3L);
+            List<VClient> vClients =
+                    vClientRepository.findAllByVcCode(clientCode);
+
+            if (vClients.isEmpty()) {
+                result.add("Строка " + (row.getRowNum() + 1) + ": не найден клиент с заданным кодом.");
+                return Optional.empty();
+            }
+            VClient vClient = vClients.get(0);
+            clientUser.setNClientId(vClient.getNClientId());
+            clientIdsToDelete.add(vClient.getNClientId());
         }
 
-        List<VClient> vClients =
-                vClientRepository.findAllByVcCode(clientCode);
-
-        if (vClients.isEmpty()) {
-            result.add("Строка " + (row.getRowNum() + 1) + ": не найден клиент с заданным кодом.");
-            return Optional.empty();
-        }
-        VClient vClient = vClients.get(0);
-        clientUser.setNClientId(vClient.getNClientId());
         clientUser.setVcLastName(getCellStringValue(row.getCell(1)));
         clientUser.setVcFirstName(getCellStringValue(row.getCell(2)));
         clientUser.setVcSecondName(getCellStringValue(row.getCell(3)));
@@ -253,9 +256,7 @@ public class ExcelUploadService {
 
         clientUser.setVcEmail(getCellStringValue(row.getCell(6)));
         clientUser.setVcPhone(getCellStringValue(row.getCell(7)));
-        clientUser.setNRoleId(3L);
 
-        clientIdsToDelete.add(vClient.getNClientId());
         return Optional.of(clientUser);
     }
 

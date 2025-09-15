@@ -24,6 +24,36 @@ public interface VSlotRepository extends JpaRepository<VSlot, Long> {
     List<VSlot> findAllByFilter(List<Long> nStoreIds, List<Long> nClientIds,
                                 Long nStatusId, @Valid LocalDate dDateBegin, @Valid LocalDate dDateEnd);
 
+
+    @Query(value = """
+            SELECT n_slot_id, d_date, d_start_TIME, d_end_TIME,\s
+                       n_loading_point_id, vc_Loading_Point_Code, vc_Loading_Point_Name, vc_Loading_Point_Comment,
+                       n_store_id, vc_store_code, vc_store_name,\s
+                       n_client_id,  vc_client_code, vc_client_name,
+                       n_status_Id, vc_status_code,vc_status_name
+            FROM v_slot
+            WHERE (:nStoreIds IS NULL OR n_store_id IN (:nStoreIds))
+              AND n_client_id = :nClientId
+              AND (:dDateBegin IS NULL OR d_date >= :dDateBegin)
+              AND (:dDateEnd IS NULL OR d_date <= :dDateEnd)
+
+            UNION ALL
+
+            SELECT n_slot_id, d_date, d_start_TIME, d_end_TIME,\s
+                       n_loading_point_id, vc_Loading_Point_Code, vc_Loading_Point_Name, vc_Loading_Point_Comment,
+                       n_store_id, vc_store_code, vc_store_name,\s
+                       n_client_id,  vc_client_code, vc_client_name,
+                       n_status_Id, vc_status_code,vc_status_name
+            FROM v_slot
+            WHERE (:nStoreIds IS NULL OR n_store_id IN (:nStoreIds))
+              AND n_status_id = 2
+              AND (:dDateBegin IS NULL OR d_date >= :dDateBegin)
+              AND (:dDateEnd IS NULL OR d_date <= :dDateEnd)
+            ORDER BY d_date, d_start_time, n_store_id
+            """, nativeQuery = true)
+    List<VSlot> findAllFreeAndByFilter(List<Long> nStoreIds, Long nClientId,
+                                       @Valid LocalDate dDateBegin, @Valid LocalDate dDateEnd);
+
     @Query(value = """
             SELECT * FROM v_slot
             WHERE n_client_id = :nClientId
@@ -40,17 +70,27 @@ public interface VSlotRepository extends JpaRepository<VSlot, Long> {
 
 
     @Query(value = """
-            SELECT * FROM v_slot
-            WHERE (:dDateBegin IS NULL OR d_date >= :dDateBegin)
-              AND (:dDateEnd IS NULL OR d_date <= :dDateEnd)
-              AND n_status_id = 1
-            UNION ALL
-            SELECT * FROM v_slot
-            WHERE (:dDateBegin IS NULL OR d_date >= :dDateBegin)
-              AND (:dDateEnd IS NULL OR d_date <= :dDateEnd)
-              AND n_status_id = 2
-              AND n_client_id = :clientId
-            ORDER BY d_date, d_start_time, n_store_id
+                 SELECT n_slot_id, d_date, d_start_TIME, d_end_TIME,\s
+                       n_loading_point_id, vc_Loading_Point_Code, vc_Loading_Point_Name, vc_Loading_Point_Comment,
+                       n_store_id, vc_store_code, vc_store_name,\s
+                       n_client_id,  vc_client_code, vc_client_name,
+                       n_status_Id, vc_status_code,vc_status_name
+                 FROM v_slot
+                 WHERE (:dDateBegin IS NULL OR d_date >= :dDateBegin)
+                   AND (:dDateEnd IS NULL OR d_date <= :dDateEnd)
+                   AND n_status_id = 1
+                 UNION ALL
+                 SELECT n_slot_id, d_date, d_start_TIME, d_end_TIME,\s
+                     n_loading_point_id, vc_Loading_Point_Code, vc_Loading_Point_Name, vc_Loading_Point_Comment,
+                     n_store_id, vc_store_code, vc_store_name,\s
+                     n_client_id,  vc_client_code, vc_client_name,
+                     n_status_Id, vc_status_code,vc_status_name
+                 FROM v_slot
+                 WHERE (:dDateBegin IS NULL OR d_date >= :dDateBegin)
+                   AND (:dDateEnd IS NULL OR d_date <= :dDateEnd)
+                   AND n_status_id = 2
+                   AND n_client_id = :clientId
+                 ORDER BY d_date, d_start_time, n_store_id
             """, nativeQuery = true)
     List<VSlot> findAllByClientIdAndDate(Long clientId, @Valid LocalDate dDateBegin, @Valid LocalDate dDateEnd);
 

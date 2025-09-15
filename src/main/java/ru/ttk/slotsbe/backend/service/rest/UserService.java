@@ -41,13 +41,13 @@ public class UserService {
     /**
      * Определение организации текущего пользователя
      */
-    public VClient getCurrentUserClient() {
+    public Long getCurrentUserClientId() {
         ClientUser clientUser = getCurrentUser();
-//        if (clientUser != null) {
-//            return clientUser.getOrg();
-//        } else
-
-        return null;
+        if (clientUser != null) {
+            return clientUser.getNClientId();
+        } else {
+            return null;
+        }
     }
 
     /**

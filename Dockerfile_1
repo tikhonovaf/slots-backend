@@ -1,0 +1,27 @@
+FROM eclipse-temurin:17-jre-alpine
+ARG JAR_FILE=target/slotsbe.jar
+WORKDIR /opt/app
+COPY ${JAR_FILE} slotsbe.jar
+#ENTRYPOINT ["java","-jar","slotsbe.jar"]
+ENV JAVA_OPTS="-Xms1024m -Xmx1024m"
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar slotsbe.jar"]
+
+#FROM eclipse-temurin:17-jre-alpine
+#
+## Указываем путь к основному JAR
+#ARG JAR_FILE=target/slotsbe.jar
+#
+## Рабочая директория
+#WORKDIR /opt/app
+#
+## Копируем основной JAR
+#COPY ${JAR_FILE} slotsbe.jar
+#
+## Копируем orai18n.jar (предварительно положи его в ./lib рядом с Dockerfile)
+#COPY lib/orai18n-19.3.0.0.jar lib/orai18n.jar
+#
+## Устанавливаем JAVA_OPTS с classpath
+#ENV JAVA_OPTS="-Xms1024m -Xmx1024m -cp lib/orai18n.jar:slotsbe.jar"
+#
+## Запускаем приложение через главный класс
+#ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS ru.ttk.slotsbe.backend.ApplicationBe"]

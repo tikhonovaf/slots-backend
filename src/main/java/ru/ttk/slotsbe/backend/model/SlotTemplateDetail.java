@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 /**
@@ -14,7 +13,7 @@ import java.time.LocalTime;
 @Entity
 @Getter
 @Setter
-public class SlotTemplate {
+public class SlotTemplateDetail {
 
     /**
      * Идентификатор
@@ -22,6 +21,13 @@ public class SlotTemplate {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "slot_seq")
     @SequenceGenerator(name = "slot_seq", sequenceName = "slot_seq", allocationSize = 1)
+    @Column(name = "n_slot_template_line_id")
+    Long nSlotTemplateLineId;
+
+    /**
+     * Идентификатор шаблона
+     */
+    @Column(name = "n_slot_template_id")
     Long nSlotTemplateId;
 
     /**
@@ -29,6 +35,19 @@ public class SlotTemplate {
      */
     @Column(name = "n_loading_point_id")
     Long nLoadingPointId;
+
+
+    /**
+     * Тип строки
+     */
+    @Column(name = "vc_type")
+    String vcType;
+
+    /**
+     * Дата слота
+     */
+    @Column(name = "d_date")
+    LocalDate dDate;
 
     /**
      * Слот - Время начала

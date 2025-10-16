@@ -266,6 +266,33 @@ paths:
               schema:
                 $ref: "#/components/schemas/processingMessages"
 
+  /slots/templates:
+    get:
+      tags:
+        - SLOT
+      operationId: getSlotsTemplates
+      summary: Выборка списка шаблонов расписаний
+      responses:
+        200:
+          description: Список шаблонов расписаний
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/slotsTemplateDtos"
+    delete:
+      tags:
+        - SLOT
+      operationId: deleteSlotsTemplates
+      summary: Удаление шаблонов расписаний
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/templateIds"
+      responses:
+        200:
+          description: Пустой ответ
+
   /clients:
     get:
       summary: Выборка списка клиентов
@@ -754,6 +781,12 @@ components:
       items:
         type: integer
         format: int64
+    templateIds:
+      description: Список идентификаторов шаблонов
+      type: array
+      items:
+        type: integer
+        format: int64
     processingMessages:
       description: Список сообщений о загрузке
       type: array
@@ -783,6 +816,28 @@ components:
           type: string
           description: Наименование
           example: Наименование 1
+
+    slotsTemplateDtos:
+      type: array
+      description: Список шаблонов
+      items:
+        $ref: "#/components/schemas/slotsTemplateDto"
+
+    slotsTemplateDto:
+      type: object
+      description: Шаблон
+      properties:
+        nSlotTemplateId:
+          type: integer
+          format: int64
+          description: Идентификатор
+          example: 1
+        vcName:
+          type: string
+          description: Наименование
+          example: Наименование 1
+
+
     sessionDto:
       type: object
       description: Данные о сессии пользователя

@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.stereotype.Service;
 import ru.ttk.slotsbe.backend.model.*;
 import ru.ttk.slotsbe.backend.repository.*;
@@ -24,7 +23,7 @@ import java.util.*;
 public class ExcelUploadService {
 
     private final SlotRepository slotRepository;
-    private final SlotTemplateRepository slotTemplateRepository;
+    private final SlotTemplateDetailRepository slotTemplateDetailRepository;
     private final VLoadingPointRepository vLoadingPointRepository;
     private final SlotStatusRepository slotStatusRepository;
     private final VStoreRepository vStoreRepository;
@@ -42,10 +41,10 @@ public class ExcelUploadService {
     static final Long CLIENT_USER_ID = 3L;
 
 
-    public List<String> saveSlotTemplatesFromExcel(InputStream is) {
+    public List<String> saveSlotTemplatesFromExcel(InputStream is, Long nSlotTemplateId) {
         List<String> result = new ArrayList<>();
         Set<Long> storeIdsToDelete = new HashSet<>();
-        List<SlotTemplate> templates = new ArrayList<>();
+        List<SlotTemplateDetail> templates = new ArrayList<>();
 
         try (Workbook workbook = new XSSFWorkbook(is)) {
 
@@ -54,13 +53,17 @@ public class ExcelUploadService {
             for (Row row : sheet) {
                 if (row.getRowNum() == 0 || isRowEmpty(row)) continue;
 
-                Optional<SlotTemplate> optionalTemplate = parseSlotTemplateRow(row, result, storeIdsToDelete);
-                optionalTemplate.ifPresent(templates::add);
+                Optional<SlotTemplateDetail> optionalTemplate = parseSlotTemplateRow(row, result, storeIdsToDelete);
+                if (optionalTemplate.isPresent()) {
+                    SlotTemplateDetail template = optionalTemplate.get();
+                    template.setNSlotTemplateId(nSlotTemplateId);
+                    templates.add(template);
+                }
             }
 
             if (result.isEmpty()) {
-                storeIdsToDelete.forEach(slotTemplateRepository::deleteAllByStoreId);
-                slotTemplateRepository.saveAll(templates);
+                storeIdsToDelete.forEach(slotTemplateDetailRepository::deleteAllByStoreId);
+                slotTemplateDetailRepository.saveAll(templates);
                 result.add("Шаблон загружен успешно. Загружено " + templates.size() + " строк");
                 log.info("Загружено {} строк", templates.size());
             } else {
@@ -76,8 +79,8 @@ public class ExcelUploadService {
     }
 
 
-    private Optional<SlotTemplate> parseSlotTemplateRow(Row row, List<String> result, Set<Long> storeIdsToDelete) {
-        SlotTemplate template = new SlotTemplate();
+    private Optional<SlotTemplateDetail> parseSlotTemplateRow(Row row, List<String> result, Set<Long> storeIdsToDelete) {
+        SlotTemplateDetail template = new SlotTemplateDetail();
 
         String storeCode = getCellStringValue(row.getCell(0));
         String loadingPointCode = getCellStringValue(row.getCell(1));
@@ -104,13 +107,19 @@ public class ExcelUploadService {
         template.setNLoadingPointId(point.getNLoadingPointId());
         storeIdsToDelete.add(point.getNStoreId());
 
-        LocalTime startTime = getTimeFromCell(row.getCell(2), "Время начала слота", row.getRowNum(), result);
-        LocalTime endTime = getTimeFromCell(row.getCell(3), "Время окончания слота", row.getRowNum(), result);
+        String lineType = getCellStringValue(row.getCell(2));
+        if (lineType != null) template.setVcType(lineType);
+
+        LocalDate slotDate = getDateFromCell(row.getCell(3), "Дата слота", row.getRowNum(), result);
+        if (slotDate != null) template.setDDate(slotDate);
+
+        LocalTime startTime = getTimeFromCell(row.getCell(4), "Время начала слота", row.getRowNum(), result);
+        LocalTime endTime = getTimeFromCell(row.getCell(5), "Время окончания слота", row.getRowNum(), result);
 
         if (startTime != null) template.setDStartTime(startTime);
         if (endTime != null) template.setDEndTime(endTime);
 
-        Long statusId = getStatusId(row.getCell(4), row.getRowNum(), result);
+        Long statusId = getStatusId(row.getCell(6), row.getRowNum(), result);
         template.setNStatusId(statusId);
 
         return Optional.of(template);
@@ -379,7 +388,10 @@ public class ExcelUploadService {
     }
 
     private LocalDate getDateFromCell(Cell cell, String label, int rowNum, List<String> result) {
-        if (cell == null || !DateUtil.isCellDateFormatted(cell)) {
+        if (cell == null ) {
+            return null;
+        }
+        if (!DateUtil.isCellDateFormatted(cell)) {
             result.add("Строка " + (rowNum + 1) + ": " + label + " - неверный формат.");
             return null;
         }

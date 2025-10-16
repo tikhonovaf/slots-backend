@@ -1,6 +1,5 @@
 package ru.ttk.slotsbe.backend.service.rest;//package ru.ttk.slotsbe.backend.service;
 
-import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +40,8 @@ public class SlotApiService implements SlotsApiDelegate {
 
     private final VSlotRepository vSlotRepository;
     private final VStoreRepository vStoreRepository;
-    private final SlotTemplateRepository slotTemplateRepository;
+    private final SlotTemplateDetailRepository slotTemplateDetailRepository;
+    private final SlotTemplateTitleRepository slotTemplateTitleRepository;
     private final SlotRepository slotRepository;
     private final SlotMapper slotMapper;
     private final ClientUserRepository clientUserRepository;
@@ -51,6 +51,7 @@ public class SlotApiService implements SlotsApiDelegate {
     private final SlotStatusRepository slotStatusRepository;
     private final TemplateEngine templateEngine;
     private final UserService userService;
+
 
     public static final Long RESERVED = 2L; // название подбирайте по смыслу
 
@@ -197,7 +198,14 @@ public class SlotApiService implements SlotsApiDelegate {
     public ResponseEntity<List<String>> slotsTemplateUpload(MultipartFile file) {//    @Override
         List<String> messages = null;
         try {
-            messages = excelUploadService.saveSlotTemplatesFromExcel(file.getInputStream());
+            SlotTemplateTitle slotTemplateTitle = new SlotTemplateTitle();
+            slotTemplateTitle.setVcName(
+                    Optional.ofNullable(file.getOriginalFilename())
+                            .map(name -> name.replaceFirst("\\.[^.]+$", ""))
+                            .orElse("unknown")
+            );
+            slotTemplateTitleRepository.save(slotTemplateTitle);
+            messages = excelUploadService.saveSlotTemplatesFromExcel(file.getInputStream(), slotTemplateTitle.getNSlotTemplateId());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -226,7 +234,7 @@ public class SlotApiService implements SlotsApiDelegate {
             }
 
             String storeCode = optionalStore.get().getVcCode();
-            List<SlotTemplate> templates = slotTemplateRepository.findAllByStoreId(storeId);
+            List<SlotTemplateDetail> templates = slotTemplateDetailRepository.findAllByStoreId(storeId);
 
             for (LocalDate genDate = dateBegin; !genDate.isAfter(dateEnd); genDate = genDate.plusDays(1)) {
                 boolean hasReservedSlots = !slotRepository.findReservedSlotsByStoreIdAndDate(storeId, genDate).isEmpty();
@@ -239,7 +247,7 @@ public class SlotApiService implements SlotsApiDelegate {
 
                 slotRepository.deleteSlotsByStoreIdAndDate(storeId, genDate);
 
-                for (SlotTemplate template : templates) {
+                for (SlotTemplateDetail template : templates) {
                     Slot slot = new Slot();
                     slot.setNLoadingPointId(template.getNLoadingPointId());
                     slot.setDDate(genDate);
@@ -395,6 +403,39 @@ public class SlotApiService implements SlotsApiDelegate {
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .contentLength(excelBytes.length)
                 .body(resource);
+    }
+
+
+    /**
+     * GET /slots/templates : Выборка списка шаблонов расписаний
+     *
+     * @return Список шаблонов расписаний (status code 200)
+     */
+    @Override
+    public ResponseEntity<List<SlotsTemplateDto>> getSlotsTemplates() {
+        List<SlotsTemplateDto> result =
+                slotTemplateTitleRepository
+                        .findAll()
+                        .stream()
+                        .map(slotMapper::fromEntityToDto)
+                        .toList();
+
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * DELETE /slots/templates : Удаление шаблонов расписаний
+     *
+     * @param templateIds Список ИД шаблонов (required)
+     * @return Пустой ответ (status code 200)
+     */
+    @Override
+    public ResponseEntity<Void> deleteSlotsTemplates(List<Long> templateIds) {
+
+        slotTemplateDetailRepository.deleteAllByTitleIds(templateIds);
+        slotTemplateTitleRepository.deleteAllByIds(templateIds);
+
+        return ResponseEntity.noContent().build();
     }
 
 }

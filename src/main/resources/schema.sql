@@ -242,32 +242,28 @@ FROM slot
          LEFT JOIN v_client c on c.n_client_id = slot.n_client_id
 ;
 
+-- Список шаблонов слотов (новая таблица) - заголовок
+CREATE TABLE IF NOT EXISTS slot_template_title
+(
+    n_slot_template_id   bigint  NOT  NULL,
+    vc_name varchar,
+    CONSTRAINT slot_template_title_pkey
+    PRIMARY  KEY (  n_slot_template_id)
+    );
+
 -- Список шаблонов слотов (новая таблица)
-CREATE TABLE IF NOT EXISTS slot_template
+CREATE TABLE IF NOT EXISTS slot_template_detail
 (
-    n_slot_template_id
-    bigint
-    NOT
-    NULL,
-    n_loading_point_id
-    bigint
-    NOT
-    NULL,
-    d_start_time
-    time,
-    d_end_time
-    time,
-    n_status_Id
-    bigint
-    NOT
-    NULL,
-    CONSTRAINT
-    slot_template_pkey
-    PRIMARY
-    KEY
-(
-    n_slot_template_id
-)
+    n_slot_template_line_id  bigint  NOT  NULL,
+    n_slot_template_id  bigint  NOT  NULL,
+    vc_type varchar,
+    d_date  date,
+    n_loading_point_id  bigint  NOT  NULL,
+    d_start_time     time,
+    d_end_time     time,
+    n_status_Id  bigint  NOT  NULL,
+    CONSTRAINT  slot_template_detail_pkey PRIMARY   KEY
+     (  n_slot_template_line_id )
     );
 
 

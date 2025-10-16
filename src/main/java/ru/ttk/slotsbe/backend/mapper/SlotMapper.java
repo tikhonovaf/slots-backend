@@ -36,4 +36,16 @@ public class SlotMapper {
         return result;
     }
 
+    /**
+     * Маппинг из SlotTemplateTitle в DTO
+     *
+     * @param entity - строка из SlotStatus
+     * @return Данные в структуре DTO
+     */
+    public SlotsTemplateDto fromEntityToDto(SlotTemplateTitle entity) {
+        SlotsTemplateDto result = new SlotsTemplateDto();
+        CoreUtil.patch(entity, result);
+        return result;
+    }
+
 }

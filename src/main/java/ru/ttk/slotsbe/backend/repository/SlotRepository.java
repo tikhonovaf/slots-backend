@@ -41,7 +41,13 @@ public interface SlotRepository extends JpaRepository<Slot, Long> {
                 AND d_start_time  = :startTime
                 AND n_status_id  = 1
             """, nativeQuery = true)
-    List<Slot> findAllFreeSlotsByPointId(Long loadingPointId, LocalDate slotDate, LocalTime startTime
-    );
+    List<Slot> findAllFreeSlotsByPointId(Long loadingPointId, LocalDate slotDate, LocalTime startTime);
+
+    @Query(value = """
+            SELECT * FROM slot
+            WHERE n_loading_point_id = :nLoadingPointId
+            AND d_date = :dDate AND n_status_id  = 2
+            """, nativeQuery = true)
+    List<Slot> findReservedSlotsByLoadingPointAndDate(Long nLoadingPointId, LocalDate dDate);
 
 }

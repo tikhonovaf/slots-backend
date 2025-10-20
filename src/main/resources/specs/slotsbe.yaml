@@ -738,12 +738,11 @@ components:
       description: Параметры для генерации слотов
       type: object
       properties:
-        nStoreIds:
-          description: Список идентификаторов нефтебаз
-          type: array
-          items:
-            type: integer
-            format: int64
+        nTemplateId:
+          description: Идентификатор шаблона
+          type: integer
+          format: int64
+          example: 1
         dDateBegin:
           type: string
           format: date

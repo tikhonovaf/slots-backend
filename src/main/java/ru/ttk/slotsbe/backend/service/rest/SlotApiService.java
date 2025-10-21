@@ -228,109 +228,76 @@ public class SlotApiService implements SlotsApiDelegate {
         LocalDate dateEnd = slotGenerateParams.getdDateEnd();
 
         List<SlotTemplateDetail> templateDetails =
-                slotTemplateDetailRepository.findAllByNSlotTemplateId(slotGenerateParams.getnTemplateId());
-        // Строки шаблона слот для будней
-        List<SlotTemplateDetail> templateDetailsWorkDays = templateDetails.stream()
-                .filter(td -> td.getVcType().equalsIgnoreCase("будни"))
-                .toList();
-        // Строки шаблона слот для выходных
-        List<SlotTemplateDetail> templateDetailsWeekend = templateDetails.stream()
-                .filter(td -> td.getVcType().equalsIgnoreCase("выходные"))
-                .toList();
+                slotTemplateDetailRepository.findAllByNSlotTemplateId(slotGenerateParams.getnSlotTemplateId());
 
-        // Строки шаблона слот для особых дней
-        List<SlotTemplateDetail> templateDetailsSpecialDays = templateDetails.stream()
-                .filter(td -> td.getDDate() == null)
-                .toList();
-        List<LocalDate> specialDays = templateDetailsSpecialDays.stream()
-                .map(sd -> sd.getDDate())
-                .toList();
+        // Разделяем шаблоны
+        List<SlotTemplateDetail> workdayTemplates = new ArrayList<>();
+        List<SlotTemplateDetail> weekendTemplates = new ArrayList<>();
+        List<SlotTemplateDetail> specialDayTemplates = new ArrayList<>();
+        Set<LocalDate> specialDays = new HashSet<>();
 
-        // Определяем список пунктов налива в шаблоне
-        Set<Long> loadingPoints = templateDetails.stream()
+        for (SlotTemplateDetail td : templateDetails) {
+            if (td.getDDate() != null) {
+                specialDayTemplates.add(td);
+                specialDays.add(td.getDDate());
+            } else if ("Рабочий".equalsIgnoreCase(td.getVcType())) {
+                workdayTemplates.add(td);
+            } else if ("Выходной".equalsIgnoreCase(td.getVcType())) {
+                weekendTemplates.add(td);
+            }
+        }
+
+        Set<Long> loadingPointIds = templateDetails.stream()
                 .map(SlotTemplateDetail::getNLoadingPointId)
                 .collect(Collectors.toSet());
 
-        for (LocalDate genDate = dateBegin; !genDate.isAfter(dateEnd); genDate = genDate.plusDays(1)) {
-            // Определяем, что данной даты нет в особых днях
-            if (specialDays.contains(genDate)) {
-                continue;
-            }
-            // Определяем день недели
-            List<SlotTemplateDetail> templateDetailsCur;
-            DayOfWeek day = genDate.getDayOfWeek();
-            if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) {
-                templateDetailsCur = templateDetailsWeekend;
+        // Обрабатываем диапазон дат
+        for (LocalDate date = dateBegin; !date.isAfter(dateEnd); date = date.plusDays(1)) {
+            List<SlotTemplateDetail> currentTemplates;
+
+            if (specialDays.contains(date)) {
+                LocalDate finalDate = date;
+                currentTemplates = specialDayTemplates.stream()
+                        .filter(t -> finalDate.equals(t.getDDate()))
+                        .toList();
             } else {
-                templateDetailsCur = templateDetailsWorkDays;
+                DayOfWeek day = date.getDayOfWeek();
+                currentTemplates = (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY)
+                        ? weekendTemplates
+                        : workdayTemplates;
             }
 
-            // Определяем пункты налива на  genDate, для которых уже было резервирование
-            List<Long> reservedLoadingPointIds = new ArrayList<>();
-            for (Long loadingPointId : loadingPoints) {
-                if (!slotRepository.findReservedSlotsByLoadingPointAndDate(loadingPointId, genDate).isEmpty()) {
-                    reservedLoadingPointIds.add(loadingPointId);
-                }
-            }
-            // Определяем пункты налива на  genDate, для которых не было резервирование на genDate, слоты по ним удаляем
-            List<Long> notReservedLoadingPointIds = new ArrayList<>();
-            for (Long loadingPointId : loadingPoints) {
-                if (slotRepository.findReservedSlotsByLoadingPointAndDate(loadingPointId, genDate).isEmpty()) {
-                    notReservedLoadingPointIds.add(loadingPointId);
-                }
-            }
-            slotRepository.deleteSlotsByloadingPointIdsIdAndDate(notReservedLoadingPointIds, genDate);
+            if (currentTemplates.isEmpty()) continue;
 
+            // Список зарезервированных пунктов налива
+            Set<Long> reservedLoadingPoints = new HashSet<>(slotRepository
+                    .findReservedSlotsByloadingPointIdsAndDate(loadingPointIds, date));
 
-            for (SlotTemplateDetail templateDetail : templateDetailsCur) {
-                // Для пунктов налива, для которых уже есть занятые слоты, не генерим
-                if (reservedLoadingPointIds.contains(templateDetail.getNLoadingPointId())) {
+            // Удаляем все свободные слоты сразу одним запросом
+            List<Long> notReserved = loadingPointIds.stream()
+                    .filter(lp -> !reservedLoadingPoints.contains(lp))
+                    .toList();
+
+            if (!notReserved.isEmpty()) {
+                slotRepository.deleteSlotsByloadingPointIdsIdAndDate(notReserved, date);
+            }
+
+            // Генерируем новые слоты только для свободных пунктов
+            for (SlotTemplateDetail template : currentTemplates) {
+                if (reservedLoadingPoints.contains(template.getNLoadingPointId())) {
                     continue;
                 }
+
                 Slot slot = new Slot();
-                slot.setNLoadingPointId(templateDetail.getNLoadingPointId());
-                slot.setDDate(genDate);
-                slot.setDStartTime(templateDetail.getDStartTime());
-                slot.setDEndTime(templateDetail.getDEndTime());
-                slot.setNStatusId(templateDetail.getNStatusId());
-                slotsToSave.add(slot);
-            }
-
-        }
-        // Для особых дней
-        for (LocalDate genDate : specialDays) {
-
-            // Определяем пункты налива на  genDate, для которых уже было резервирование
-            List<Long> reservedLoadingPointIds = new ArrayList<>();
-            for (Long loadingPointId : loadingPoints) {
-                if (!slotRepository.findReservedSlotsByLoadingPointAndDate(loadingPointId, genDate).isEmpty()) {
-                    reservedLoadingPointIds.add(loadingPointId);
-                }
-            }
-            // Определяем пункты налива на  genDate, для которых не было резервирование на genDate, слоты по ним удаляем
-            List<Long> notReservedLoadingPointIds = new ArrayList<>();
-            for (Long loadingPointId : loadingPoints) {
-                if (slotRepository.findReservedSlotsByLoadingPointAndDate(loadingPointId, genDate).isEmpty()) {
-                    notReservedLoadingPointIds.add(loadingPointId);
-                }
-            }
-            slotRepository.deleteSlotsByloadingPointIdsIdAndDate(notReservedLoadingPointIds, genDate);
-
-
-            for (SlotTemplateDetail templateDetail : templateDetailsSpecialDays) {
-                // Для пунктов налива, для которых уже есть занятые слоты, не генерим
-                if (reservedLoadingPointIds.contains(templateDetail.getNLoadingPointId())) {
-                    continue;
-                }
-                Slot slot = new Slot();
-                slot.setNLoadingPointId(templateDetail.getNLoadingPointId());
-                slot.setDDate(genDate);
-                slot.setDStartTime(templateDetail.getDStartTime());
-                slot.setDEndTime(templateDetail.getDEndTime());
-                slot.setNStatusId(templateDetail.getNStatusId());
+                slot.setNLoadingPointId(template.getNLoadingPointId());
+                slot.setDDate(date);
+                slot.setDStartTime(template.getDStartTime());
+                slot.setDEndTime(template.getDEndTime());
+                slot.setNStatusId(template.getNStatusId());
                 slotsToSave.add(slot);
             }
         }
+
         if (!slotsToSave.isEmpty()) {
             slotRepository.saveAll(slotsToSave);
         }

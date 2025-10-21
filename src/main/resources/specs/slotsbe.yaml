@@ -738,7 +738,7 @@ components:
       description: Параметры для генерации слотов
       type: object
       properties:
-        nTemplateId:
+        nSlotTemplateId:
           description: Идентификатор шаблона
           type: integer
           format: int64

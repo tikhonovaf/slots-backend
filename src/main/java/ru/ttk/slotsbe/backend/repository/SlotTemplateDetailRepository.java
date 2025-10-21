@@ -34,5 +34,8 @@ public interface SlotTemplateDetailRepository extends JpaRepository<SlotTemplate
             """, nativeQuery = true)
     void deleteAllByTitleIds(List<Long> ids);
 
-    List<SlotTemplateDetail> findAllByNSlotTemplateId(Long nTemplateId);
+    @Query(value = "SELECT * FROM slot_template_detail\n  " +
+            " WHERE n_slot_template_id = :nSlotTemplateId "
+            , nativeQuery = true)
+    List<SlotTemplateDetail> findAllByNSlotTemplateId(Long nSlotTemplateId);
 }

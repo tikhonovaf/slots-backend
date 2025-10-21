@@ -162,16 +162,29 @@ FROM slot
          LEFT JOIN v_client c on c.n_client_id = slot.n_client_id
 ;
 
--- Список шаблонов слотов (новая таблица)
-CREATE TABLE slot_template
+-- Список шаблонов слотов (новая таблица) - заголовок
+CREATE TABLE IF NOT EXISTS slot_template_title
 (
-    n_slot_template_id number NOT NULL,
-    n_loading_point_id number NOT NULL,
-    d_start_time       TIMESTAMP,
-    d_end_time         TIMESTAMP,
-    n_status_Id        number NOT NULL,
-    CONSTRAINT slot_template_pkey PRIMARY KEY (n_slot_template_id)
-);
+    n_slot_template_id   number NOT NULL,
+    vc_name varchar2(100),
+    CONSTRAINT slot_template_title_pkey
+    PRIMARY  KEY (  n_slot_template_id)
+    );
+
+-- Список шаблонов слотов (новая таблица)
+CREATE TABLE IF NOT EXISTS slot_template_detail
+(
+    n_slot_template_line_id  number NOT NULL,
+    n_slot_template_id  number NOT NULL,
+    vc_type varchar2(100),
+    d_date  date,
+    n_loading_point_id  number NOT NULL,
+    d_start_time     TIMESTAMP,
+    d_end_time     TIMESTAMP,
+    n_status_Id  number NOT NULL,
+    CONSTRAINT  slot_template_detail_pkey PRIMARY   KEY
+(  n_slot_template_line_id )
+    );
 
 
 -- Список пользователей покупателей ( view)

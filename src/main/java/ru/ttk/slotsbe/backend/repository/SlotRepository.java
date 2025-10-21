@@ -24,6 +24,15 @@ public interface SlotRepository extends JpaRepository<Slot, Long> {
             """, nativeQuery = true)
     void deleteSlotsByStoreIdAndDate(Long nStoreId, LocalDate dDate);
 
+    @Modifying
+    @Transactional
+    @Query(value = """
+            DELETE FROM slot
+             WHERE (:loadingPointIds IS NULL OR n_store_id IN (:loadingPointIds))
+             AND d_date = :dDate
+            """, nativeQuery = true)
+    void deleteSlotsByloadingPointIdsIdAndDate(List<Long> loadingPointIds, LocalDate dDate);
+
     @Query(value = """
             SELECT * FROM slot
             WHERE n_loading_point_id IN (

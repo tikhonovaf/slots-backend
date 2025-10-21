@@ -267,11 +267,21 @@ public class SlotApiService implements SlotsApiDelegate {
 
             // Определяем пункты налива на  genDate, для которых уже было резервирование
             List<Long> reservedLoadingPointIds = new ArrayList<>();
-            for (Long loadingPointId : loadingPoints ) {
+            for (Long loadingPointId : loadingPoints) {
                 if (!slotRepository.findReservedSlotsByLoadingPointAndDate(loadingPointId, genDate).isEmpty()) {
                     reservedLoadingPointIds.add(loadingPointId);
                 }
             }
+            // Определяем пункты налива на  genDate, для которых не было резервирование на genDate, слоты по ним удаляем
+            List<Long> notReservedLoadingPointIds = new ArrayList<>();
+            for (Long loadingPointId : loadingPoints) {
+                if (slotRepository.findReservedSlotsByLoadingPointAndDate(loadingPointId, genDate).isEmpty()) {
+                    notReservedLoadingPointIds.add(loadingPointId);
+                }
+            }
+            slotRepository.deleteSlotsByloadingPointIdsIdAndDate(notReservedLoadingPointIds, genDate);
+
+
             for (SlotTemplateDetail templateDetail : templateDetailsCur) {
                 // Для пунктов налива, для которых уже есть занятые слоты, не генерим
                 if (reservedLoadingPointIds.contains(templateDetail.getNLoadingPointId())) {
@@ -286,184 +296,216 @@ public class SlotApiService implements SlotsApiDelegate {
                 slotsToSave.add(slot);
             }
 
-//            messages.add("Для нефтебазы: " + storeCode + " на дату: " + genDate + " слоты добавлены.");
         }
+        // Для особых дней
+        for (LocalDate genDate : specialDays) {
 
+            // Определяем пункты налива на  genDate, для которых уже было резервирование
+            List<Long> reservedLoadingPointIds = new ArrayList<>();
+            for (Long loadingPointId : loadingPoints) {
+                if (!slotRepository.findReservedSlotsByLoadingPointAndDate(loadingPointId, genDate).isEmpty()) {
+                    reservedLoadingPointIds.add(loadingPointId);
+                }
+            }
+            // Определяем пункты налива на  genDate, для которых не было резервирование на genDate, слоты по ним удаляем
+            List<Long> notReservedLoadingPointIds = new ArrayList<>();
+            for (Long loadingPointId : loadingPoints) {
+                if (slotRepository.findReservedSlotsByLoadingPointAndDate(loadingPointId, genDate).isEmpty()) {
+                    notReservedLoadingPointIds.add(loadingPointId);
+                }
+            }
+            slotRepository.deleteSlotsByloadingPointIdsIdAndDate(notReservedLoadingPointIds, genDate);
+
+
+            for (SlotTemplateDetail templateDetail : templateDetailsSpecialDays) {
+                // Для пунктов налива, для которых уже есть занятые слоты, не генерим
+                if (reservedLoadingPointIds.contains(templateDetail.getNLoadingPointId())) {
+                    continue;
+                }
+                Slot slot = new Slot();
+                slot.setNLoadingPointId(templateDetail.getNLoadingPointId());
+                slot.setDDate(genDate);
+                slot.setDStartTime(templateDetail.getDStartTime());
+                slot.setDEndTime(templateDetail.getDEndTime());
+                slot.setNStatusId(templateDetail.getNStatusId());
+                slotsToSave.add(slot);
+            }
+        }
         if (!slotsToSave.isEmpty()) {
             slotRepository.saveAll(slotsToSave);
         }
 
         return ResponseEntity.ok(messages);
-}
+    }
 
-/**
- * Список статусов
- */
-@Override
-public ResponseEntity<List<SlotStatusDto>> getSlotStatuses() {
+    /**
+     * Список статусов
+     */
+    @Override
+    public ResponseEntity<List<SlotStatusDto>> getSlotStatuses() {
 //      Формирование списка статусов
-    List<SlotStatusDto> result =
-            slotStatusRepository
-                    .findAll()
-                    .stream()
-                    .map(v -> slotMapper.fromEntityToDto(v))
-                    .collect(Collectors.toList());
+        List<SlotStatusDto> result =
+                slotStatusRepository
+                        .findAll()
+                        .stream()
+                        .map(v -> slotMapper.fromEntityToDto(v))
+                        .collect(Collectors.toList());
 
-    return ResponseEntity.ok(result);
+        return ResponseEntity.ok(result);
 
-}
+    }
 
-/**
- * PATCH /slots/reserve : Резервирование слотов
- *
- * @param modifiedSlotDtos (optional)
- * @return Пустой ответ (status code 200)
- */
-@Override
-public ResponseEntity<List<String>> reserveSlots(List<@Valid ModifiedSlotDto> modifiedSlotDtos) {
-    final Long STATUS_RESERVED = 2L;
-    List<String> messages = new ArrayList<>();
+    /**
+     * PATCH /slots/reserve : Резервирование слотов
+     *
+     * @param modifiedSlotDtos (optional)
+     * @return Пустой ответ (status code 200)
+     */
+    @Override
+    public ResponseEntity<List<String>> reserveSlots(List<@Valid ModifiedSlotDto> modifiedSlotDtos) {
+        final Long STATUS_RESERVED = 2L;
+        List<String> messages = new ArrayList<>();
 
-    for (ModifiedSlotDto slotDto : modifiedSlotDtos) {
-        Long slotId = slotDto.getnSlotId();
-        Long clientId = slotDto.getnClientId();
+        for (ModifiedSlotDto slotDto : modifiedSlotDtos) {
+            Long slotId = slotDto.getnSlotId();
+            Long clientId = slotDto.getnClientId();
 
-        Optional<Slot> optionalSlot = slotRepository.findById(slotId);
-        Optional<VClient> optionalClient = vClientRepository.findById(clientId);
+            Optional<Slot> optionalSlot = slotRepository.findById(slotId);
+            Optional<VClient> optionalClient = vClientRepository.findById(clientId);
 
-        if (optionalSlot.isEmpty()) {
-            messages.add("Слот с ID " + slotId + " не найден.");
-            continue;
+            if (optionalSlot.isEmpty()) {
+                messages.add("Слот с ID " + slotId + " не найден.");
+                continue;
+            }
+
+            if (optionalClient.isEmpty()) {
+                messages.add("Клиент с ID " + clientId + " не найден.");
+                continue;
+            }
+
+            Slot slot = optionalSlot.get();
+            slot.setNStatusId(STATUS_RESERVED);
+            slot.setNClientId(clientId);
+            slotRepository.save(slot);
+
+            vSlotRepository.findById(slotId).ifPresent(vSlot -> {
+                messages.add(String.format("Зарезервирован слот: %s - %s - %s - %s - %s",
+                        vSlot.getVcStoreCode(),
+                        vSlot.getDDate(),
+                        vSlot.getDStartTime(),
+                        vSlot.getDEndTime(),
+                        vSlot.getVcClientCode()));
+            });
         }
 
-        if (optionalClient.isEmpty()) {
-            messages.add("Клиент с ID " + clientId + " не найден.");
-            continue;
+        if (messages.isEmpty()) {
+            messages.add("Слоты не зарезервированы.");
         }
 
-        Slot slot = optionalSlot.get();
-        slot.setNStatusId(STATUS_RESERVED);
-        slot.setNClientId(clientId);
-        slotRepository.save(slot);
-
-        vSlotRepository.findById(slotId).ifPresent(vSlot -> {
-            messages.add(String.format("Зарезервирован слот: %s - %s - %s - %s - %s",
-                    vSlot.getVcStoreCode(),
-                    vSlot.getDDate(),
-                    vSlot.getDStartTime(),
-                    vSlot.getDEndTime(),
-                    vSlot.getVcClientCode()));
-        });
+        return ResponseEntity.ok(messages);
     }
 
-    if (messages.isEmpty()) {
-        messages.add("Слоты не зарезервированы.");
-    }
+    /**
+     * PATCH /slots/free : Снятие слотов с резерва
+     *
+     * @param modifiedSlotDtos (optional)
+     * @return Пустой ответ (status code 200)
+     */
+    @Override
+    public ResponseEntity<List<String>> freeSlots(List<@Valid ModifiedSlotDto> modifiedSlotDtos) {
+        final Long STATUS_FREE = 1L;
+        List<String> messages = new ArrayList<>();
 
-    return ResponseEntity.ok(messages);
-}
+        for (ModifiedSlotDto slotDto : modifiedSlotDtos) {
+            Long slotId = slotDto.getnSlotId();
 
-/**
- * PATCH /slots/free : Снятие слотов с резерва
- *
- * @param modifiedSlotDtos (optional)
- * @return Пустой ответ (status code 200)
- */
-@Override
-public ResponseEntity<List<String>> freeSlots(List<@Valid ModifiedSlotDto> modifiedSlotDtos) {
-    final Long STATUS_FREE = 1L;
-    List<String> messages = new ArrayList<>();
+            Optional<Slot> optionalSlot = slotRepository.findById(slotId);
+            if (optionalSlot.isEmpty()) {
+                messages.add("Слот с ID " + slotId + " не найден.");
+                continue;
+            }
 
-    for (ModifiedSlotDto slotDto : modifiedSlotDtos) {
-        Long slotId = slotDto.getnSlotId();
+            Slot slot = optionalSlot.get();
+            slot.setNStatusId(STATUS_FREE);
+            slot.setNClientId(null);
+            slotRepository.save(slot);
 
-        Optional<Slot> optionalSlot = slotRepository.findById(slotId);
-        if (optionalSlot.isEmpty()) {
-            messages.add("Слот с ID " + slotId + " не найден.");
-            continue;
+            vSlotRepository.findById(slotId).ifPresent(vSlot -> {
+                String message = String.format("Снят с резерва слот: %s - %s - %s - %s",
+                        vSlot.getVcStoreCode(),
+                        vSlot.getDDate(),
+                        vSlot.getDStartTime(),
+                        vSlot.getDEndTime());
+                messages.add(message);
+            });
         }
 
-        Slot slot = optionalSlot.get();
-        slot.setNStatusId(STATUS_FREE);
-        slot.setNClientId(null);
-        slotRepository.save(slot);
+        if (messages.isEmpty()) {
+            messages.add("Слоты не зарезервированы.");
+        }
 
-        vSlotRepository.findById(slotId).ifPresent(vSlot -> {
-            String message = String.format("Снят с резерва слот: %s - %s - %s - %s",
-                    vSlot.getVcStoreCode(),
-                    vSlot.getDDate(),
-                    vSlot.getDStartTime(),
-                    vSlot.getDEndTime());
-            messages.add(message);
-        });
+        return ResponseEntity.ok(messages);
     }
 
-    if (messages.isEmpty()) {
-        messages.add("Слоты не зарезервированы.");
+    /**
+     * POST /slots/reserve/upload : Загрузка файла с запросом от пользователя клиента (для отладки)
+     *
+     * @param id   ИД пользователя (required)
+     * @param file Файл для загрузки (optional)
+     * @return Список сообщений о загрузке (status code 200)
+     */
+    @Override
+    public ResponseEntity<Resource> slotsReserveUpload(Long id, MultipartFile file) {
+        byte[] excelBytes;
+
+        try {
+            excelBytes = excelUploadService.processClientReserveFromExcel(file.getInputStream());
+            log.info("Excel файл успешно сгенерирован.");
+        } catch (IOException e) {
+            log.error("Ошибка при обработке Excel-файла", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        ByteArrayResource resource = new ByteArrayResource(excelBytes);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=slots_export.xlsx")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .contentLength(excelBytes.length)
+                .body(resource);
     }
 
-    return ResponseEntity.ok(messages);
-}
 
-/**
- * POST /slots/reserve/upload : Загрузка файла с запросом от пользователя клиента (для отладки)
- *
- * @param id   ИД пользователя (required)
- * @param file Файл для загрузки (optional)
- * @return Список сообщений о загрузке (status code 200)
- */
-@Override
-public ResponseEntity<Resource> slotsReserveUpload(Long id, MultipartFile file) {
-    byte[] excelBytes;
+    /**
+     * GET /slots/templates : Выборка списка шаблонов расписаний
+     *
+     * @return Список шаблонов расписаний (status code 200)
+     */
+    @Override
+    public ResponseEntity<List<SlotsTemplateDto>> getSlotsTemplates() {
+        List<SlotsTemplateDto> result =
+                slotTemplateTitleRepository
+                        .findAll()
+                        .stream()
+                        .map(slotMapper::fromEntityToDto)
+                        .toList();
 
-    try {
-        excelBytes = excelUploadService.processClientReserveFromExcel(file.getInputStream());
-        log.info("Excel файл успешно сгенерирован.");
-    } catch (IOException e) {
-        log.error("Ошибка при обработке Excel-файла", e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        return ResponseEntity.ok(result);
     }
 
-    ByteArrayResource resource = new ByteArrayResource(excelBytes);
+    /**
+     * DELETE /slots/templates : Удаление шаблонов расписаний
+     *
+     * @param templateIds Список ИД шаблонов (required)
+     * @return Пустой ответ (status code 200)
+     */
+    @Override
+    public ResponseEntity<Void> deleteSlotsTemplates(List<Long> templateIds) {
 
-    return ResponseEntity.ok()
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=slots_export.xlsx")
-            .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-            .contentLength(excelBytes.length)
-            .body(resource);
-}
+        slotTemplateDetailRepository.deleteAllByTitleIds(templateIds);
+        slotTemplateTitleRepository.deleteAllByIds(templateIds);
 
-
-/**
- * GET /slots/templates : Выборка списка шаблонов расписаний
- *
- * @return Список шаблонов расписаний (status code 200)
- */
-@Override
-public ResponseEntity<List<SlotsTemplateDto>> getSlotsTemplates() {
-    List<SlotsTemplateDto> result =
-            slotTemplateTitleRepository
-                    .findAll()
-                    .stream()
-                    .map(slotMapper::fromEntityToDto)
-                    .toList();
-
-    return ResponseEntity.ok(result);
-}
-
-/**
- * DELETE /slots/templates : Удаление шаблонов расписаний
- *
- * @param templateIds Список ИД шаблонов (required)
- * @return Пустой ответ (status code 200)
- */
-@Override
-public ResponseEntity<Void> deleteSlotsTemplates(List<Long> templateIds) {
-
-    slotTemplateDetailRepository.deleteAllByTitleIds(templateIds);
-    slotTemplateTitleRepository.deleteAllByIds(templateIds);
-
-    return ResponseEntity.noContent().build();
-}
+        return ResponseEntity.noContent().build();
+    }
 
 }

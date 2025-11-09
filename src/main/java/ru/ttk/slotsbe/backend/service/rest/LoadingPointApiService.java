@@ -50,7 +50,8 @@ public class LoadingPointApiService implements LoadingPointsApiDelegate {
 
         if (result.isEmpty()) {
             log.info("Пункты налива не найдены для storeId {}", storeId);
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.ok(result);
+//            return ResponseEntity.noContent().build();
         }
 
         log.info("Найдено {} пунктов налива для storeId {}", result.size(), storeId);

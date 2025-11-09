@@ -300,3 +300,14 @@ FROM client_user u
          LEFT JOIN v_client c on u.n_client_id = c.n_client_id
          JOIN slot_role r on r.n_role_id = u.n_role_id
 ;
+-- Строки шаблона расписания (строки)
+CREATE VIEW  v_slot_template_detail
+AS
+    SELECT std.n_slot_template_line_id, std.n_slot_template_id,
+    vc_type, d_date,
+    std.n_loading_point_id, lp.vc_code as vc_loading_point_code, s.vc_code as vc_store_code,
+    d_start_time, d_end_time, n_status_Id
+   FROM slot_template_detail std
+    JOIN loading_point lp on lp.n_loading_point_id = std.n_loading_point_id
+    JOIN v_store s on s.n_store_id = lp.n_store_id
+;

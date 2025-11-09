@@ -26,6 +26,7 @@ import ru.ttk.slotsbe.backend.service.excel.ExcelUploadService;
 import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,6 +43,7 @@ public class SlotApiService implements SlotsApiDelegate {
     private final VSlotRepository vSlotRepository;
     private final VStoreRepository vStoreRepository;
     private final SlotTemplateDetailRepository slotTemplateDetailRepository;
+    private final VSlotTemplateDetailRepository vSlotTemplateDetailRepository;
     private final SlotTemplateTitleRepository slotTemplateTitleRepository;
     private final SlotRepository slotRepository;
     private final SlotMapper slotMapper;
@@ -52,7 +54,6 @@ public class SlotApiService implements SlotsApiDelegate {
     private final SlotStatusRepository slotStatusRepository;
     private final TemplateEngine templateEngine;
     private final UserService userService;
-
 
     public static final Long RESERVED = 2L; // название подбирайте по смыслу
 
@@ -227,16 +228,20 @@ public class SlotApiService implements SlotsApiDelegate {
         LocalDate dateBegin = slotGenerateParams.getdDateBegin();
         LocalDate dateEnd = slotGenerateParams.getdDateEnd();
 
-        List<SlotTemplateDetail> templateDetails =
-                slotTemplateDetailRepository.findAllByNSlotTemplateId(slotGenerateParams.getnSlotTemplateId());
+        // Создаём форматтер с нужным шаблоном
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+
+        List<VSlotTemplateDetail> templateDetails =
+                vSlotTemplateDetailRepository.findAllByNSlotTemplateId(slotGenerateParams.getnSlotTemplateId());
 
         // Разделяем шаблоны
-        List<SlotTemplateDetail> workdayTemplates = new ArrayList<>();
-        List<SlotTemplateDetail> weekendTemplates = new ArrayList<>();
-        List<SlotTemplateDetail> specialDayTemplates = new ArrayList<>();
+        List<VSlotTemplateDetail> workdayTemplates = new ArrayList<>();
+        List<VSlotTemplateDetail> weekendTemplates = new ArrayList<>();
+        List<VSlotTemplateDetail> specialDayTemplates = new ArrayList<>();
         Set<LocalDate> specialDays = new HashSet<>();
 
-        for (SlotTemplateDetail td : templateDetails) {
+        for (VSlotTemplateDetail td : templateDetails) {
             if (td.getDDate() != null) {
                 specialDayTemplates.add(td);
                 specialDays.add(td.getDDate());
@@ -248,12 +253,12 @@ public class SlotApiService implements SlotsApiDelegate {
         }
 
         Set<Long> loadingPointIds = templateDetails.stream()
-                .map(SlotTemplateDetail::getNLoadingPointId)
+                .map(VSlotTemplateDetail::getNLoadingPointId)
                 .collect(Collectors.toSet());
 
         // Обрабатываем диапазон дат
         for (LocalDate date = dateBegin; !date.isAfter(dateEnd); date = date.plusDays(1)) {
-            List<SlotTemplateDetail> currentTemplates;
+            List<VSlotTemplateDetail> currentTemplates;
 
             if (specialDays.contains(date)) {
                 LocalDate finalDate = date;
@@ -283,7 +288,7 @@ public class SlotApiService implements SlotsApiDelegate {
             }
 
             // Генерируем новые слоты только для свободных пунктов
-            for (SlotTemplateDetail template : currentTemplates) {
+            for (VSlotTemplateDetail template : currentTemplates) {
                 if (reservedLoadingPoints.contains(template.getNLoadingPointId())) {
                     continue;
                 }
@@ -294,14 +299,21 @@ public class SlotApiService implements SlotsApiDelegate {
                 slot.setDStartTime(template.getDStartTime());
                 slot.setDEndTime(template.getDEndTime());
                 slot.setNStatusId(template.getNStatusId());
+
                 slotsToSave.add(slot);
+                messages.add(date.format(dateFormatter)
+                        + " : " + template.getVcStoreCode()
+                        + " : " + template.getVcLoadingPointCode()
+                        + " : " + template.getDStartTime().format(timeFormatter)
+                        + " - " + template.getDEndTime().format(timeFormatter)
+                );
             }
         }
 
         if (!slotsToSave.isEmpty()) {
             slotRepository.saveAll(slotsToSave);
         }
-
+        // Выводим список нефтебаз, для которых были сгенерены слоты
         return ResponseEntity.ok(messages);
     }
 
